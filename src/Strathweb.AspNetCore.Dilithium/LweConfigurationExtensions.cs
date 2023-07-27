@@ -15,15 +15,13 @@ public static class LweConfigurationExtensions
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
         if (options.TokenValidationParameters == null) throw new ArgumentNullException(nameof(options.TokenValidationParameters));
-        if (string.IsNullOrEmpty(options.Authority)) throw new ArgumentException("Authority must be set!");
-
         if (!lweTokenOptions.SupportedAlgorithms.Any())
         {
             return;
         }
         
         options.TokenValidationParameters.CryptoProviderFactory = new LweCryptoProviderFactory();
-        options.TokenValidationParameters.IssuerSigningKeyResolver = (_, securityToken, kid, _) =>
+        options.TokenValidationParameters.IssuerSigningKeyResolver = (_, securityToken, kid, tokenValidationParameters) =>
         {
             if (securityToken is not JwtSecurityToken _)
             {
@@ -36,7 +34,13 @@ public static class LweConfigurationExtensions
                 return cachedSecurityKeys;
             }
 
-            var configManager = new ConfigurationManager<OpenIdConnectConfiguration>($"{options.Authority}/.well-known/openid-configuration",
+            var serverUrl = tokenValidationParameters.ValidIssuer ??
+                            tokenValidationParameters.ValidIssuers.FirstOrDefault() ?? options.Authority;
+
+            if (serverUrl == null)
+                throw new Exception(
+                    "Impossible to determine the issuer. Make sure to set Authority of the JwtBearerOptions.Authority, TokenValidationParameters.ValidIssuer or TokenValidationParameters.ValidIssuers");
+            var configManager = new ConfigurationManager<OpenIdConnectConfiguration>($"{serverUrl.TrimEnd('/')}/.well-known/openid-configuration",
                 new OpenIdConnectConfigurationRetriever());
             
             JsonWebKeySet.DefaultSkipUnresolvedJsonWebKeys = false;
