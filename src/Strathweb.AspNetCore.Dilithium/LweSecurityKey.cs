@@ -5,13 +5,13 @@ namespace Strathweb.AspNetCore.Dilithium;
 
 public class LweSecurityKey : SecurityKey
 {
-    private readonly LweAlgorithm[] _supportedAlgoirthms;
+    private readonly LweAlgorithm[] _supportedAlgorithms;
     private readonly string _keyId;
     private readonly byte[] _x;
 
-    public LweSecurityKey(JsonWebKey jsonWebKey, LweAlgorithm[] supportedAlgoirthms)
+    public LweSecurityKey(JsonWebKey jsonWebKey, LweAlgorithm[] supportedAlgorithms)
     {
-        _supportedAlgoirthms = supportedAlgoirthms;
+        _supportedAlgorithms = supportedAlgorithms;
         _x = Base64Url.Decode(jsonWebKey.X);
         _keyId = jsonWebKey.KeyId;
         KeySize = jsonWebKey.KeySize;
@@ -26,12 +26,12 @@ public class LweSecurityKey : SecurityKey
 
     public override bool IsSupportedAlgorithm(string algorithm) =>
         Enum.TryParse<LweAlgorithm>(algorithm, true, out var parsedAlg) &&
-        _supportedAlgoirthms.Contains(parsedAlg);
+        _supportedAlgorithms.Contains(parsedAlg);
 
     private DilithiumParameters GetDilithiumParameters(string algorithm)
     {
         if (Enum.TryParse<LweAlgorithm>(algorithm, true, out var parsedAlg) &&
-            _supportedAlgoirthms.Contains(parsedAlg))
+            _supportedAlgorithms.Contains(parsedAlg))
         {
             if (parsedAlg == LweAlgorithm.CRYDI2) return DilithiumParameters.Dilithium2;
             if (parsedAlg == LweAlgorithm.CRYDI3) return DilithiumParameters.Dilithium3;

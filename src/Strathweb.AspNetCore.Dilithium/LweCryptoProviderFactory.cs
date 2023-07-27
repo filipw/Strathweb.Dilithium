@@ -6,7 +6,7 @@ namespace Strathweb.AspNetCore.Dilithium;
 
 public class LweCryptoProviderFactory : CryptoProviderFactory
 {
-    private readonly ConcurrentDictionary<string, DilithiumSigner> _dilithiumVerifiers = new ConcurrentDictionary<string, DilithiumSigner>();
+    private readonly ConcurrentDictionary<string, DilithiumSigner> _dilithiumVerifiers = new();
 
     public override SignatureProvider CreateForSigning(SecurityKey key, string algorithm) =>
         GetOrCreate(key, algorithm, forSigning: true);
