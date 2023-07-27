@@ -22,7 +22,7 @@ public class LweSecurityKey : SecurityKey
     public override string KeyId => _keyId;
 
     public DilithiumPublicKeyParameters GetPublicKeyParameters(string algorithm) =>
-        new DilithiumPublicKeyParameters(GetDilithiumParameters(algorithm), _x);
+        new(GetDilithiumParameters(algorithm), _x);
 
     public override bool IsSupportedAlgorithm(string algorithm) =>
         Enum.TryParse<LweAlgorithm>(algorithm, true, out var parsedAlg) &&

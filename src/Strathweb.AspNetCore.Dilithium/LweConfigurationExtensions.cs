@@ -11,6 +11,7 @@ public static class LweConfigurationExtensions
 {
     public static void ConfigureLweTokenSupport(this JwtBearerOptions options) =>
         ConfigureLweTokenSupport(options, new LweTokenOptions());
+    
     public static void ConfigureLweTokenSupport(this JwtBearerOptions options, LweTokenOptions lweTokenOptions)
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
