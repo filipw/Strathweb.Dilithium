@@ -7,6 +7,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FE1E534F-D80
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strathweb.AspNetCore.Dilithium", "src\Strathweb.AspNetCore.Dilithium\Strathweb.AspNetCore.Dilithium.csproj", "{652A39F5-A895-4AA7-8A9C-5446FD81BCB1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{2EB9100A-14E8-4084-9E7F-BC8FF6C033B9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleApi", "samples\SampleApi\SampleApi.csproj", "{E7236598-FF60-42D9-9516-47DC7D1B1AB3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityServer", "samples\IdentityServer\IdentityServer.csproj", "{0AC67563-9A38-47A8-930E-03A30333C86C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,8 +26,18 @@ Global
 		{652A39F5-A895-4AA7-8A9C-5446FD81BCB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{652A39F5-A895-4AA7-8A9C-5446FD81BCB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{652A39F5-A895-4AA7-8A9C-5446FD81BCB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7236598-FF60-42D9-9516-47DC7D1B1AB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7236598-FF60-42D9-9516-47DC7D1B1AB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7236598-FF60-42D9-9516-47DC7D1B1AB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7236598-FF60-42D9-9516-47DC7D1B1AB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0AC67563-9A38-47A8-930E-03A30333C86C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0AC67563-9A38-47A8-930E-03A30333C86C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0AC67563-9A38-47A8-930E-03A30333C86C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0AC67563-9A38-47A8-930E-03A30333C86C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{652A39F5-A895-4AA7-8A9C-5446FD81BCB1} = {FE1E534F-D803-429D-9A15-D5D31C5F1448}
+		{E7236598-FF60-42D9-9516-47DC7D1B1AB3} = {2EB9100A-14E8-4084-9E7F-BC8FF6C033B9}
+		{0AC67563-9A38-47A8-930E-03A30333C86C} = {2EB9100A-14E8-4084-9E7F-BC8FF6C033B9}
 	EndGlobalSection
 EndGlobal
