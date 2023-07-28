@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Microsoft.IdentityModel.Tokens;
+using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Pqc.Crypto.Crystals.Dilithium;
 
 namespace Strathweb.AspNetCore.Dilithium;
@@ -17,7 +18,8 @@ public class LweCryptoProviderFactory : CryptoProviderFactory
     private SignatureProvider GetOrCreate(SecurityKey key, string algorithm, bool forSigning)
     {
         if (key is not LweSecurityKey lweKey)
-            return key.CryptoProviderFactory.CreateForVerifying(key, algorithm);
+            throw new Exception(
+                $"Key {key.GetType()} is not compatible with LweCryptoProviderFactory. Key must be of type LweSecurityKey");
             
         var cacheKey = lweKey.KeyId;
         if (forSigning)
@@ -30,10 +32,14 @@ public class LweCryptoProviderFactory : CryptoProviderFactory
         }
 
         var newSigner = new DilithiumSigner();
-        var publicKey = lweKey.GetPublicKeyParameters(algorithm);
-
-        newSigner.Init(forSigning, publicKey);
-
+        ICipherParameters? publicOrPrivateKey = forSigning ? lweKey.PrivateKey : lweKey.PublicKey;
+        
+        if (publicOrPrivateKey == null)
+        {
+            throw new Exception("Security key cannot be used for cipher parameters are missing for the required operation");
+        }
+        
+        newSigner.Init(forSigning, publicOrPrivateKey);
         _dilithiumVerifiers[cacheKey] = newSigner;
         return new LweSignatureProvider(lweKey, algorithm, newSigner);
     }

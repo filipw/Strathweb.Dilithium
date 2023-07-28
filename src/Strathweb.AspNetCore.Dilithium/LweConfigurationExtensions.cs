@@ -21,7 +21,8 @@ public static class LweConfigurationExtensions
             return;
         }
         
-        options.TokenValidationParameters.CryptoProviderFactory = new LweCryptoProviderFactory();
+        var lweCryptoProvideFactory = new LweCryptoProviderFactory();
+        //options.TokenValidationParameters.CryptoProviderFactory = new LweCryptoProviderFactory();
         options.TokenValidationParameters.IssuerSigningKeyResolver = (_, securityToken, kid, tokenValidationParameters) =>
         {
             if (securityToken is not JwtSecurityToken _)
@@ -63,7 +64,10 @@ public static class LweConfigurationExtensions
             {
                 if (key is JsonWebKey jsonWebKey && Enum.TryParse<LweAlgorithm>(jsonWebKey.Alg, true, out var parsedAlg) && lweTokenOptions.SupportedAlgorithms.Contains(parsedAlg))
                 {
-                    processedKeys.Add(new LweSecurityKey(jsonWebKey, lweTokenOptions.SupportedAlgorithms));
+                    processedKeys.Add(new LweSecurityKey(jsonWebKey)
+                    {
+                        CryptoProviderFactory = lweCryptoProvideFactory
+                    });
                 }
                 else
                 {

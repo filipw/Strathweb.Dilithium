@@ -13,20 +13,13 @@ public class LweSignatureProvider : SignatureProvider
         if (key == null) throw new ArgumentNullException(nameof(key));
         if (algorithm == null) throw new ArgumentNullException(nameof(algorithm));
         _signer = signer ?? throw new ArgumentNullException(nameof(signer));
-        Console.WriteLine($"ALGO: {algorithm}");
     }
 
-    public override byte[] Sign(byte[] input)
-    {
-        return _signer.GenerateSignature(input);
-    }
+    public override byte[] Sign(byte[] input) => 
+        _signer.GenerateSignature(input);
 
-    public override bool Verify(byte[] input, byte[] signature)
-    {
-        var verified = _signer.VerifySignature(input, signature);
-        Console.WriteLine($"VERIFIED: {verified}");
-        return verified;
-    }
+    public override bool Verify(byte[] input, byte[] signature) => 
+        _signer.VerifySignature(input, signature);
 
     protected override void Dispose(bool disposing)
     {

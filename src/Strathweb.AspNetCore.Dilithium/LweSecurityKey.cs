@@ -1,43 +1,73 @@
 using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Pqc.Crypto.Crystals.Dilithium;
+using Org.BouncyCastle.Security;
 
 namespace Strathweb.AspNetCore.Dilithium;
 
-public class LweSecurityKey : SecurityKey
+public class LweSecurityKey : AsymmetricSecurityKey
 {
-    private readonly LweAlgorithm[] _supportedAlgorithms;
+    private readonly string _supportedAlgorithm;
     private readonly string _keyId;
-    private readonly byte[] _x;
 
-    public LweSecurityKey(JsonWebKey jsonWebKey, LweAlgorithm[] supportedAlgorithms)
+    public LweSecurityKey(string algorithm)
     {
-        _supportedAlgorithms = supportedAlgorithms;
-        _x = Base64Url.Decode(jsonWebKey.X);
+        _supportedAlgorithm = algorithm ?? throw new ArgumentNullException(nameof(algorithm));
+            
+        var dilithiumParameters = GetDilithiumParameters(algorithm);
+        var random = new SecureRandom();
+        var keyGenParameters = new DilithiumKeyGenerationParameters(random, dilithiumParameters);
+        var dilithiumKeyPairGenerator = new DilithiumKeyPairGenerator();
+        dilithiumKeyPairGenerator.Init(keyGenParameters);
+
+        var keyPair = dilithiumKeyPairGenerator.GenerateKeyPair();
+
+        PublicKey = (DilithiumPublicKeyParameters)keyPair.Public;
+        PrivateKey = (DilithiumPrivateKeyParameters)keyPair.Private;
+        _keyId = BitConverter.ToString(SecureRandom.GetNextBytes(random, 16)).Replace("-", "");
+        CryptoProviderFactory = new LweCryptoProviderFactory();
+    }
+
+    /// <summary>
+    /// Used only for validation (initialize from JSON Web Key obtained from IDP). Cannot be used for signing.
+    /// </summary>
+    /// <param name="jsonWebKey"></param>
+    internal LweSecurityKey(JsonWebKey jsonWebKey)
+    {
+        if (jsonWebKey == null) throw new ArgumentNullException(nameof(jsonWebKey));
+        if (jsonWebKey.X == null) throw new ArgumentException("X parameter (public key) is missing!");
+        _supportedAlgorithm = jsonWebKey.Alg ?? throw new ArgumentException("jsonWebKey.Alg cannot be null!");
+        
+        var dilithiumParameters = GetDilithiumParameters(jsonWebKey.Alg);
+        PublicKey = new DilithiumPublicKeyParameters(dilithiumParameters, Base64Url.Decode(jsonWebKey.X));
+        
+        // todo: decide if we allow loading private key from jsonWebKey.D
+
         _keyId = jsonWebKey.KeyId;
         KeySize = jsonWebKey.KeySize;
     }
+    
+    public DilithiumPublicKeyParameters PublicKey { get; set; }
+    
+    public DilithiumPrivateKeyParameters? PrivateKey { get; set; }
     
     public override int KeySize { get; }
 
     public override string KeyId => _keyId;
 
-    public DilithiumPublicKeyParameters GetPublicKeyParameters(string algorithm) =>
-        new(GetDilithiumParameters(algorithm), _x);
-
-    public override bool IsSupportedAlgorithm(string algorithm) =>
-        Enum.TryParse<LweAlgorithm>(algorithm, true, out var parsedAlg) &&
-        _supportedAlgorithms.Contains(parsedAlg);
+    public override bool IsSupportedAlgorithm(string algorithm) => _supportedAlgorithm == algorithm;
 
     private DilithiumParameters GetDilithiumParameters(string algorithm)
     {
-        if (Enum.TryParse<LweAlgorithm>(algorithm, true, out var parsedAlg) &&
-            _supportedAlgorithms.Contains(parsedAlg))
-        {
-            if (parsedAlg == LweAlgorithm.CRYDI2) return DilithiumParameters.Dilithium2;
-            if (parsedAlg == LweAlgorithm.CRYDI3) return DilithiumParameters.Dilithium3;
-            if (parsedAlg == LweAlgorithm.CRYDI5) return DilithiumParameters.Dilithium5;
-        }
+        if (_supportedAlgorithm == algorithm) return DilithiumParameters.Dilithium2;
+        if (_supportedAlgorithm == algorithm) return DilithiumParameters.Dilithium3;
+        if (_supportedAlgorithm == algorithm) return DilithiumParameters.Dilithium5;
 
-        throw new Exception("Unsupported algorithm type");
+        throw new NotSupportedException($"Unsupported algorithm type: '{algorithm}'");
     }
+
+    [Obsolete("HasPrivateKey method is deprecated, please use PrivateKeyStatus instead.")] 
+    public override bool HasPrivateKey => PrivateKey != null;
+
+    public override PrivateKeyStatus PrivateKeyStatus =>
+        PrivateKey == null ? PrivateKeyStatus.Unknown : PrivateKeyStatus.Exists;
 }
