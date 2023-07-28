@@ -27,10 +27,6 @@ public class LweSecurityKey : AsymmetricSecurityKey
         CryptoProviderFactory = new LweCryptoProviderFactory();
     }
 
-    /// <summary>
-    /// Used only for validation (initialize from JSON Web Key obtained from IDP). Cannot be used for signing.
-    /// </summary>
-    /// <param name="jsonWebKey"></param>
     internal LweSecurityKey(JsonWebKey jsonWebKey)
     {
         if (jsonWebKey == null) throw new ArgumentNullException(nameof(jsonWebKey));
@@ -39,8 +35,11 @@ public class LweSecurityKey : AsymmetricSecurityKey
         
         var dilithiumParameters = GetDilithiumParameters(jsonWebKey.Alg);
         PublicKey = new DilithiumPublicKeyParameters(dilithiumParameters, Base64Url.Decode(jsonWebKey.X));
-        
-        // todo: decide if we allow loading private key from jsonWebKey.D
+
+        if (jsonWebKey.D != null)
+        {
+            PrivateKey = GetPrivateKeyParametersFromEncodedKey(dilithiumParameters, Base64Url.Decode(jsonWebKey.D));
+        }
 
         _keyId = jsonWebKey.KeyId;
         KeySize = jsonWebKey.KeySize;
@@ -71,9 +70,9 @@ public class LweSecurityKey : AsymmetricSecurityKey
     public override PrivateKeyStatus PrivateKeyStatus =>
         PrivateKey == null ? PrivateKeyStatus.Unknown : PrivateKeyStatus.Exists;
 
-    public JsonWebKey ToValidationJsonWebKey()
+    public JsonWebKey ToJsonWebKey()
     {
-        return new JsonWebKey
+        var jsonWebKey = new JsonWebKey
         {
             Kty = "LWE",
             Kid = KeyId,
@@ -81,5 +80,71 @@ public class LweSecurityKey : AsymmetricSecurityKey
             Alg = _supportedAlgorithm,
             Use = "sig"
         };
+
+        if (PrivateKey != null)
+        {
+            jsonWebKey.D = Base64Url.Encode(PrivateKey.GetEncoded());
+        }
+
+        return jsonWebKey;
+    }
+
+    private DilithiumPrivateKeyParameters GetPrivateKeyParametersFromEncodedKey(DilithiumParameters dilithiumParameters, byte[] encodedPrivateKey)
+    {
+        const int seedBytes = 32;
+        int s1Length;
+        int s2Length;
+        int t0Length;
+
+        if (dilithiumParameters == DilithiumParameters.Dilithium2)
+        {
+            s1Length = 4 * 96; 
+            s2Length = 4 * 96;
+            t0Length = 4 * 416;
+        } 
+        else if (dilithiumParameters == DilithiumParameters.Dilithium3)
+        {
+            s1Length = 5 * 128;
+            s2Length = 6 * 128;
+            t0Length = 6 * 416;
+        } 
+        else if (dilithiumParameters == DilithiumParameters.Dilithium5)
+        {
+            s1Length = 7 * 96;
+            s2Length = 8 * 96;
+            t0Length = 8 * 416;
+        }
+        else
+        {
+            throw new NotSupportedException("Unsupported mode");
+        }
+    
+        var rho = new byte[seedBytes]; // SeedBytes length
+        var k = new byte[seedBytes]; // SeedBytes length
+        var tr = new byte[seedBytes]; // SeedBytes length
+        var s1 = new byte[s1Length]; // L * PolyEtaPackedBytes
+        var s2 = new byte[s2Length]; // K * PolyEtaPackedBytes
+        var t0 = new byte[t0Length]; // K * PolyT0PackedBytes
+
+        var offset = 0;
+        Array.Copy(encodedPrivateKey, offset, rho, 0, seedBytes);
+        offset += seedBytes;
+        Array.Copy(encodedPrivateKey, offset, k, 0, seedBytes);
+        offset += seedBytes;
+        Array.Copy(encodedPrivateKey, offset, tr, 0, seedBytes);
+        offset += seedBytes;
+        Array.Copy(encodedPrivateKey, offset, s1, 0, s1Length);
+        offset += s1Length;
+        Array.Copy(encodedPrivateKey, offset, s2, 0, s2Length);
+        offset += s2Length;
+        Array.Copy(encodedPrivateKey, offset, t0, 0, t0Length);
+        offset += t0Length;
+    
+        // Take all remaining bytes as t1
+        var remainingLength = encodedPrivateKey.Length - offset;
+        var t1 = new byte[remainingLength];
+        Array.Copy(encodedPrivateKey, offset, t1, 0, remainingLength);
+
+        return new DilithiumPrivateKeyParameters(dilithiumParameters, rho, k, tr, s1, s2, t0, t1);
     }
 }

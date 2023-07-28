@@ -19,15 +19,13 @@ internal static class HostingExtensions
 
         var keyInfo = new SecurityKeyInfo
         {
-            Key = securityKey.ToValidationJsonWebKey(),
+            Key = securityKey.ToJsonWebKey(),
             SigningAlgorithm = credential.Algorithm
         };
 
         builder.Services.AddSingleton<IValidationKeysStore>(new InMemoryValidationKeysStore(new[] { keyInfo }));
-
-        
+            
         builder.Services.AddIdentityServer(opt => opt.EmitStaticAudienceClaim = true)
-            //.AddSigningCredential(new LweSecurityKey("CRYDI3"), "CRYDI3")
             .AddInMemoryApiScopes(Config.ApiScopes)
             .AddInMemoryApiResources(Config.ApiResources)
             .AddInMemoryClients(Config.Clients);
