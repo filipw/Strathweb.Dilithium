@@ -4,12 +4,17 @@ using Org.BouncyCastle.Security;
 
 namespace Strathweb.AspNetCore.Dilithium;
 
-public class LweSecurityKey : AsymmetricSecurityKey
+public class DilithiumSecurityKey : AsymmetricSecurityKey
 {
     private readonly string _supportedAlgorithm;
     private readonly string _keyId;
 
-    public LweSecurityKey(string algorithm)
+    /// <summary>
+    /// Create a new Dilithium key pair in memory and init public and private keys
+    /// </summary>
+    /// <param name="algorithm">Supported algorithms: CRYDI2, CRYDI3 and CRYDI5</param>
+    /// <exception cref="ArgumentNullException"></exception>
+    public DilithiumSecurityKey(string algorithm)
     {
         _supportedAlgorithm = algorithm ?? throw new ArgumentNullException(nameof(algorithm));
             
@@ -24,10 +29,18 @@ public class LweSecurityKey : AsymmetricSecurityKey
         PublicKey = (DilithiumPublicKeyParameters)keyPair.Public;
         PrivateKey = (DilithiumPrivateKeyParameters)keyPair.Private;
         _keyId = BitConverter.ToString(SecureRandom.GetNextBytes(random, 16)).Replace("-", "");
-        CryptoProviderFactory = new LweCryptoProviderFactory();
+        CryptoProviderFactory = new DilithiumCryptoProviderFactory();
     }
 
-    internal LweSecurityKey(JsonWebKey jsonWebKey)
+    /// <summary>
+    /// Create a key from JSON Web Key representation.
+    /// X property is mandatory and will be used to init public key.
+    /// If the key contains D property, it will be used to init private key.
+    /// </summary>
+    /// <param name="jsonWebKey"></param>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="ArgumentException"></exception>
+    public DilithiumSecurityKey(JsonWebKey jsonWebKey)
     {
         if (jsonWebKey == null) throw new ArgumentNullException(nameof(jsonWebKey));
         if (jsonWebKey.X == null) throw new ArgumentException("X parameter (public key) is missing!");
@@ -70,7 +83,7 @@ public class LweSecurityKey : AsymmetricSecurityKey
     public override PrivateKeyStatus PrivateKeyStatus =>
         PrivateKey == null ? PrivateKeyStatus.Unknown : PrivateKeyStatus.Exists;
 
-    public JsonWebKey ToJsonWebKey()
+    public JsonWebKey ToJsonWebKey(bool includePrivateKey)
     {
         var jsonWebKey = new JsonWebKey
         {
@@ -81,7 +94,7 @@ public class LweSecurityKey : AsymmetricSecurityKey
             Use = "sig"
         };
 
-        if (PrivateKey != null)
+        if (includePrivateKey && PrivateKey != null)
         {
             jsonWebKey.D = Base64Url.Encode(PrivateKey.GetEncoded());
         }

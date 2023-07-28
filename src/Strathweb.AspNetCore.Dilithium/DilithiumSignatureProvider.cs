@@ -3,11 +3,11 @@ using Org.BouncyCastle.Pqc.Crypto.Crystals.Dilithium;
 
 namespace Strathweb.AspNetCore.Dilithium;
 
-public class LweSignatureProvider : SignatureProvider
+public class DilithiumSignatureProvider : SignatureProvider
 {
     private readonly DilithiumSigner _signer;
 
-    public LweSignatureProvider(LweSecurityKey key, string algorithm, DilithiumSigner signer)
+    public DilithiumSignatureProvider(DilithiumSecurityKey key, string algorithm, DilithiumSigner signer)
         : base(key, algorithm)
     {
         if (key == null) throw new ArgumentNullException(nameof(key));

@@ -7,22 +7,21 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Strathweb.AspNetCore.Dilithium;
 
-public static class LweConfigurationExtensions
+public static class DilithiumConfigurationExtensions
 {
-    public static void ConfigureLweTokenSupport(this JwtBearerOptions options) =>
-        ConfigureLweTokenSupport(options, new LweTokenOptions());
+    public static void ConfigureDilithiumTokenSupport(this JwtBearerOptions options) =>
+        ConfigureDilithiumTokenSupport(options, new DilithiumTokenOptions());
     
-    public static void ConfigureLweTokenSupport(this JwtBearerOptions options, LweTokenOptions lweTokenOptions)
+    public static void ConfigureDilithiumTokenSupport(this JwtBearerOptions options, DilithiumTokenOptions dilithiumTokenOptions)
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
         if (options.TokenValidationParameters == null) throw new ArgumentNullException(nameof(options.TokenValidationParameters));
-        if (!lweTokenOptions.SupportedAlgorithms.Any())
+        if (!dilithiumTokenOptions.SupportedAlgorithms.Any())
         {
             return;
         }
         
-        var lweCryptoProvideFactory = new LweCryptoProviderFactory();
-        //options.TokenValidationParameters.CryptoProviderFactory = new LweCryptoProviderFactory();
+        var lweCryptoProvideFactory = new DilithiumCryptoProviderFactory();
         options.TokenValidationParameters.IssuerSigningKeyResolver = (_, securityToken, kid, tokenValidationParameters) =>
         {
             if (securityToken is not JwtSecurityToken _)
@@ -30,7 +29,7 @@ public static class LweConfigurationExtensions
                 return Enumerable.Empty<SecurityKey>();
             }
 
-            if (!lweTokenOptions.DisableCache && KeyCache.Default.TryGetValue(kid, out var result) &&
+            if (!dilithiumTokenOptions.DisableCache && KeyCache.Default.TryGetValue(kid, out var result) &&
                 result is ICollection<SecurityKey> cachedSecurityKeys)
             {
                 return cachedSecurityKeys;
@@ -62,26 +61,26 @@ public static class LweConfigurationExtensions
             var processedKeys = new List<SecurityKey>();
             foreach (var key in matchingKeys)
             {
-                if (key is JsonWebKey jsonWebKey && Enum.TryParse<LweAlgorithm>(jsonWebKey.Alg, true, out var parsedAlg) && lweTokenOptions.SupportedAlgorithms.Contains(parsedAlg))
+                if (key is JsonWebKey jsonWebKey && Enum.TryParse<LweAlgorithm>(jsonWebKey.Alg, true, out var parsedAlg) && dilithiumTokenOptions.SupportedAlgorithms.Contains(parsedAlg))
                 {
-                    processedKeys.Add(new LweSecurityKey(jsonWebKey)
+                    processedKeys.Add(new DilithiumSecurityKey(jsonWebKey)
                     {
                         CryptoProviderFactory = lweCryptoProvideFactory
                     });
                 }
                 else
                 {
-                    if (lweTokenOptions.AllowNonLweKeys)
+                    if (dilithiumTokenOptions.AllowNonLweKeys)
                     {
                         processedKeys.Add(key);
                     }
                 }
             }
 
-            if (!lweTokenOptions.DisableCache)
+            if (!dilithiumTokenOptions.DisableCache)
             {
                 KeyCache.Default.Set(kid, processedKeys,
-                    TimeSpan.FromSeconds(lweTokenOptions.CacheLifetimeInSeconds));
+                    TimeSpan.FromSeconds(dilithiumTokenOptions.CacheLifetimeInSeconds));
             }
 
             return processedKeys;

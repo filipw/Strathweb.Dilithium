@@ -13,13 +13,13 @@ internal static class HostingExtensions
 {
     public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
-        var securityKey = new LweSecurityKey("CRYDI3");
+        var securityKey = new DilithiumSecurityKey("CRYDI3");
         var credential = new SigningCredentials(securityKey, "CRYDI3");
         builder.Services.AddSingleton<ISigningCredentialStore>(new InMemorySigningCredentialsStore(credential));
 
         var keyInfo = new SecurityKeyInfo
         {
-            Key = securityKey.ToJsonWebKey(),
+            Key = securityKey.ToJsonWebKey(includePrivateKey: false),
             SigningAlgorithm = credential.Algorithm
         };
 

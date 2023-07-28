@@ -5,7 +5,7 @@ using Org.BouncyCastle.Pqc.Crypto.Crystals.Dilithium;
 
 namespace Strathweb.AspNetCore.Dilithium;
 
-public class LweCryptoProviderFactory : CryptoProviderFactory
+public class DilithiumCryptoProviderFactory : CryptoProviderFactory
 {
     private readonly ConcurrentDictionary<string, DilithiumSigner> _dilithiumVerifiers = new();
 
@@ -17,9 +17,9 @@ public class LweCryptoProviderFactory : CryptoProviderFactory
 
     private SignatureProvider GetOrCreate(SecurityKey key, string algorithm, bool forSigning)
     {
-        if (key is not LweSecurityKey lweKey)
-            throw new Exception(
-                $"Key {key.GetType()} is not compatible with LweCryptoProviderFactory. Key must be of type LweSecurityKey");
+        if (key is not DilithiumSecurityKey lweKey)
+            throw new NotSupportedException(
+                $"Key {key.GetType()} is not compatible with {nameof(DilithiumCryptoProviderFactory)}. Key must be of type {nameof(DilithiumSecurityKey)}");
             
         var cacheKey = lweKey.KeyId;
         if (forSigning)
@@ -28,7 +28,7 @@ public class LweCryptoProviderFactory : CryptoProviderFactory
         }
         if (_dilithiumVerifiers.TryGetValue(cacheKey, out var signer))
         {
-            return new LweSignatureProvider(lweKey, algorithm, signer);
+            return new DilithiumSignatureProvider(lweKey, algorithm, signer);
         }
 
         var newSigner = new DilithiumSigner();
@@ -36,14 +36,14 @@ public class LweCryptoProviderFactory : CryptoProviderFactory
         
         if (publicOrPrivateKey == null)
         {
-            throw new Exception("Security key cannot be used for cipher parameters are missing for the required operation");
+            throw new NotSupportedException("Security key cannot be used as the necessary cipher parameters are missing for the required operation");
         }
         
         newSigner.Init(forSigning, publicOrPrivateKey);
         _dilithiumVerifiers[cacheKey] = newSigner;
-        return new LweSignatureProvider(lweKey, algorithm, newSigner);
+        return new DilithiumSignatureProvider(lweKey, algorithm, newSigner);
     }
 
     public override bool IsSupportedAlgorithm(string algorithm, SecurityKey key) => 
-        key is LweSecurityKey lweKey && lweKey.IsSupportedAlgorithm(algorithm);
+        key is DilithiumSecurityKey lweKey && lweKey.IsSupportedAlgorithm(algorithm);
 }

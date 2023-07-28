@@ -1,6 +1,6 @@
 namespace Strathweb.AspNetCore.Dilithium;
 
-public record LweTokenOptions
+public record DilithiumTokenOptions
 {
     public bool DisableCache { get; set; } = false;
 
