@@ -70,4 +70,16 @@ public class LweSecurityKey : AsymmetricSecurityKey
 
     public override PrivateKeyStatus PrivateKeyStatus =>
         PrivateKey == null ? PrivateKeyStatus.Unknown : PrivateKeyStatus.Exists;
+
+    public JsonWebKey ToValidationJsonWebKey()
+    {
+        return new JsonWebKey
+        {
+            Kty = "LWE",
+            Kid = KeyId,
+            X = Base64Url.Encode(PublicKey.GetEncoded()),
+            Alg = _supportedAlgorithm,
+            Use = "sig"
+        };
+    }
 }

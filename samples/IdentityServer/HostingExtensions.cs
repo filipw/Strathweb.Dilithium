@@ -1,5 +1,11 @@
+using System.Reflection;
+using Duende.IdentityServer;
+using Duende.IdentityServer.Models;
 using Duende.IdentityServer.ResponseHandling;
 using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Stores;
+using Microsoft.IdentityModel.Tokens;
+using Strathweb.AspNetCore.Dilithium;
 
 namespace IdentityServer;
 
@@ -7,11 +13,21 @@ internal static class HostingExtensions
 {
     public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
-        builder.Services.AddSingleton<DilithiumCredentials>();
-        builder.Services.AddTransient<ITokenCreationService, DilithiumCompatibleTokenCreationService>();
-        builder.Services.AddTransient<IDiscoveryResponseGenerator, DilithiumAwareDiscoveryResponseGenerator>();
+        var securityKey = new LweSecurityKey("CRYDI3");
+        var credential = new SigningCredentials(securityKey, "CRYDI3");
+        builder.Services.AddSingleton<ISigningCredentialStore>(new InMemorySigningCredentialsStore(credential));
 
+        var keyInfo = new SecurityKeyInfo
+        {
+            Key = securityKey.ToValidationJsonWebKey(),
+            SigningAlgorithm = credential.Algorithm
+        };
+
+        builder.Services.AddSingleton<IValidationKeysStore>(new InMemoryValidationKeysStore(new[] { keyInfo }));
+
+        
         builder.Services.AddIdentityServer(opt => opt.EmitStaticAudienceClaim = true)
+            //.AddSigningCredential(new LweSecurityKey("CRYDI3"), "CRYDI3")
             .AddInMemoryApiScopes(Config.ApiScopes)
             .AddInMemoryApiResources(Config.ApiResources)
             .AddInMemoryClients(Config.Clients);
