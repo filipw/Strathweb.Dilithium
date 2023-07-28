@@ -62,6 +62,7 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
 
         _keyId = jsonWebKey.KeyId;
         KeySize = jsonWebKey.KeySize;
+        CryptoProviderFactory = new DilithiumCryptoProviderFactory();
     }
     
     public DilithiumPublicKeyParameters PublicKey { get; set; }
