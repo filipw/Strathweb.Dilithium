@@ -47,11 +47,11 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
         _supportedAlgorithm = jsonWebKey.Alg ?? throw new ArgumentException("jsonWebKey.Alg cannot be null!");
         
         var dilithiumParameters = GetDilithiumParameters(jsonWebKey.Alg);
-        PublicKey = new DilithiumPublicKeyParameters(dilithiumParameters, Base64Url.Decode(jsonWebKey.X));
+        PublicKey = new DilithiumPublicKeyParameters(dilithiumParameters, Base64UrlEncoder.DecodeBytes(jsonWebKey.X));
 
         if (jsonWebKey.D != null)
         {
-            PrivateKey = GetPrivateKeyParametersFromEncodedKey(dilithiumParameters, Base64Url.Decode(jsonWebKey.D));
+            PrivateKey = GetPrivateKeyParametersFromEncodedKey(dilithiumParameters, Base64UrlEncoder.DecodeBytes(jsonWebKey.D));
         }
 
         _keyId = jsonWebKey.KeyId;
@@ -89,14 +89,14 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
         {
             Kty = "LWE",
             Kid = KeyId,
-            X = Base64Url.Encode(PublicKey.GetEncoded()),
+            X = Base64UrlEncoder.Encode(PublicKey.GetEncoded()),
             Alg = _supportedAlgorithm,
             Use = "sig"
         };
 
         if (includePrivateKey && PrivateKey != null)
         {
-            jsonWebKey.D = Base64Url.Encode(PrivateKey.GetEncoded());
+            jsonWebKey.D = Base64UrlEncoder.Encode(PrivateKey.GetEncoded());
         }
 
         return jsonWebKey;
