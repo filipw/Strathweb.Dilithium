@@ -14,7 +14,7 @@ public class DilithiumSecurityKeyTests
         var securityKey = new DilithiumSecurityKey(algorithm);
         var jwk = securityKey.ToJsonWebKey(includePrivateKey: true);
         
-        Assert.Equal("LWE", jwk.Kty);
+        Assert.Equal("MLWE", jwk.Kty);
         Assert.Equal(securityKey.KeyId, jwk.KeyId);
         Assert.Equal(algorithm, jwk.Alg);
         Assert.Equal(securityKey.PublicKey.GetEncoded(), Base64UrlEncoder.DecodeBytes(jwk.X));
@@ -29,7 +29,7 @@ public class DilithiumSecurityKeyTests
         var securityKey = new DilithiumSecurityKey("CRYDI2");
         var jwk = securityKey.ToJsonWebKey(includePrivateKey: false);
         
-        Assert.Equal("LWE", jwk.Kty);
+        Assert.Equal("MLWE", jwk.Kty);
         Assert.Equal(securityKey.KeyId, jwk.KeyId);
         Assert.Equal("CRYDI2", jwk.Alg);
         Assert.Equal(securityKey.PublicKey.GetEncoded(), Base64UrlEncoder.DecodeBytes(jwk.X));

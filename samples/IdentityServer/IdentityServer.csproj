@@ -11,6 +11,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Strathweb.Dilithium.Duende\Strathweb.Dilithium.Duende.csproj" />
+    <ProjectReference Include="..\..\src\Strathweb.Dilithium.DuendeIdentityServer\Strathweb.Dilithium.DuendeIdentityServer.csproj" />
   </ItemGroup>
 </Project>

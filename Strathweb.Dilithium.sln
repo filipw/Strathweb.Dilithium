@@ -19,7 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strathweb.Dilithium.Tests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strathweb.Dilithium.AspNetCore", "src\Strathweb.Dilithium.AspNetCore\Strathweb.Dilithium.AspNetCore.csproj", "{641CFA6A-AD02-4AEF-BC54-7FD573BCDA70}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strathweb.Dilithium.Duende", "src\Strathweb.Dilithium.Duende\Strathweb.Dilithium.Duende.csproj", "{B9D43FE5-FF85-4374-A4A6-C9AAFB96D739}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strathweb.Dilithium.DuendeIdentityServer", "src\Strathweb.Dilithium.DuendeIdentityServer\Strathweb.Dilithium.DuendeIdentityServer.csproj", "{B9D43FE5-FF85-4374-A4A6-C9AAFB96D739}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

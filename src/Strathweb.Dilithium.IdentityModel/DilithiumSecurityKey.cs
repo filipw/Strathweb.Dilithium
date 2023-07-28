@@ -96,7 +96,7 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
     {
         var jsonWebKey = new JsonWebKey
         {
-            Kty = "LWE",
+            Kty = "MLWE",
             Kid = KeyId,
             X = Base64UrlEncoder.Encode(PublicKey.GetEncoded()),
             Alg = SupportedAlgorithm,

@@ -11,12 +11,20 @@ namespace Strathweb.Dilithium.AspNetCore;
 public static class DilithiumConfigurationExtensions
 {
     public static void ConfigureDilithiumTokenSupport(this JwtBearerOptions options) =>
-        ConfigureDilithiumTokenSupport(options, new DilithiumTokenOptions());
-    
-    public static void ConfigureDilithiumTokenSupport(this JwtBearerOptions options, DilithiumTokenOptions dilithiumTokenOptions)
+        ConfigureDilithiumTokenSupportInternal(options, null);
+
+    public static void ConfigureDilithiumTokenSupport(this JwtBearerOptions options,
+        Action<DilithiumTokenOptions> configurationDelegate) =>
+        ConfigureDilithiumTokenSupportInternal(options, configurationDelegate);
+
+    private static void ConfigureDilithiumTokenSupportInternal(JwtBearerOptions options,
+        Action<DilithiumTokenOptions>? configurationDelegate)
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
         if (options.TokenValidationParameters == null) throw new ArgumentNullException(nameof(options.TokenValidationParameters));
+        var dilithiumTokenOptions = new DilithiumTokenOptions();
+
+        configurationDelegate?.Invoke(dilithiumTokenOptions);
         if (!dilithiumTokenOptions.SupportedAlgorithms.Any())
         {
             return;
@@ -62,7 +70,7 @@ public static class DilithiumConfigurationExtensions
             var processedKeys = new List<SecurityKey>();
             foreach (var key in matchingKeys)
             {
-                if (key is JsonWebKey jsonWebKey && Enum.TryParse<LweAlgorithm>(jsonWebKey.Alg, true, out var parsedAlg) && dilithiumTokenOptions.SupportedAlgorithms.Contains(parsedAlg))
+                if (key is JsonWebKey jsonWebKey && Enum.TryParse<MlweAlgorithm>(jsonWebKey.Alg, true, out var parsedAlg) && dilithiumTokenOptions.SupportedAlgorithms.Contains(parsedAlg))
                 {
                     processedKeys.Add(new DilithiumSecurityKey(jsonWebKey)
                     {
@@ -71,7 +79,7 @@ public static class DilithiumConfigurationExtensions
                 }
                 else
                 {
-                    if (dilithiumTokenOptions.AllowNonLweKeys)
+                    if (dilithiumTokenOptions.AllowNonMlweKeys)
                     {
                         processedKeys.Add(key);
                     }

@@ -6,12 +6,12 @@ public record DilithiumTokenOptions
 
     public uint CacheLifetimeInSeconds { get; set; } = 3600 * 24;
 
-    public bool AllowNonLweKeys { get; set; } = true;
+    public bool AllowNonMlweKeys { get; set; } = true;
 
-    public LweAlgorithm[] SupportedAlgorithms { get; set; } = new[] { LweAlgorithm.CRYDI2, LweAlgorithm.CRYDI3, LweAlgorithm.CRYDI5 };
+    public MlweAlgorithm[] SupportedAlgorithms { get; set; } = new[] { MlweAlgorithm.CRYDI2, MlweAlgorithm.CRYDI3, MlweAlgorithm.CRYDI5 };
 }
 
-public enum LweAlgorithm
+public enum MlweAlgorithm
 {
     CRYDI2, 
     CRYDI3,

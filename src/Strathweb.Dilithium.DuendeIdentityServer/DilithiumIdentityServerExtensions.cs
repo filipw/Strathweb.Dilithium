@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Strathweb.Dilithium.IdentityModel;
 
-namespace Strathweb.Dilithium.Duende;
+namespace Strathweb.Dilithium.DuendeIdentityServer;
 
 public static class DilithiumIdentityServerExtensions
 {
