@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
-using Strathweb.AspNetCore.Dilithium;
+using Strathweb.Dilithium.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 

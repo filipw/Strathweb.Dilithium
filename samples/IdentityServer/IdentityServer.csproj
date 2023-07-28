@@ -11,6 +11,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Strathweb.AspNetCore.Dilithium\Strathweb.AspNetCore.Dilithium.csproj" />
+    <ProjectReference Include="..\..\src\Strathweb.Dilithium.Duende\Strathweb.Dilithium.Duende.csproj" />
   </ItemGroup>
 </Project>

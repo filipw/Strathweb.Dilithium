@@ -5,7 +5,8 @@ using Duende.IdentityServer.ResponseHandling;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Microsoft.IdentityModel.Tokens;
-using Strathweb.AspNetCore.Dilithium;
+using Strathweb.Dilithium.Duende;
+using Strathweb.Dilithium.IdentityModel;
 
 namespace IdentityServer;
 
@@ -13,19 +14,8 @@ internal static class HostingExtensions
 {
     public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
-        var securityKey = new DilithiumSecurityKey("CRYDI3");
-        var credential = new SigningCredentials(securityKey, "CRYDI3");
-        builder.Services.AddSingleton<ISigningCredentialStore>(new InMemorySigningCredentialsStore(credential));
-
-        var keyInfo = new SecurityKeyInfo
-        {
-            Key = securityKey.ToJsonWebKey(includePrivateKey: false),
-            SigningAlgorithm = credential.Algorithm
-        };
-
-        builder.Services.AddSingleton<IValidationKeysStore>(new InMemoryValidationKeysStore(new[] { keyInfo }));
-            
         builder.Services.AddIdentityServer(opt => opt.EmitStaticAudienceClaim = true)
+            .AddDilithiumSigningCredential(new DilithiumSecurityKey("CRYDI3"))
             .AddInMemoryApiScopes(Config.ApiScopes)
             .AddInMemoryApiResources(Config.ApiResources)
             .AddInMemoryClients(Config.Clients);

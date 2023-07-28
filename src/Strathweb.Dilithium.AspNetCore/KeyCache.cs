@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 
-namespace Strathweb.AspNetCore.Dilithium;
+namespace Strathweb.Dilithium.IdentityModel;
 
 internal class KeyCache
 {

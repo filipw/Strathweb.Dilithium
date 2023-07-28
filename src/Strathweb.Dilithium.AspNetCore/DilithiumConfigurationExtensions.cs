@@ -4,8 +4,9 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using Strathweb.Dilithium.IdentityModel;
 
-namespace Strathweb.AspNetCore.Dilithium;
+namespace Strathweb.Dilithium.AspNetCore;
 
 public static class DilithiumConfigurationExtensions
 {

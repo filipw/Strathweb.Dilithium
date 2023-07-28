@@ -1,7 +1,7 @@
 using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Pqc.Crypto.Crystals.Dilithium;
 
-namespace Strathweb.AspNetCore.Dilithium;
+namespace Strathweb.Dilithium.IdentityModel;
 
 public class DilithiumSignatureProvider : SignatureProvider
 {

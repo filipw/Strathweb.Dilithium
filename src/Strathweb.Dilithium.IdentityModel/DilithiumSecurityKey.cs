@@ -2,11 +2,10 @@ using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Pqc.Crypto.Crystals.Dilithium;
 using Org.BouncyCastle.Security;
 
-namespace Strathweb.AspNetCore.Dilithium;
+namespace Strathweb.Dilithium.IdentityModel;
 
 public class DilithiumSecurityKey : AsymmetricSecurityKey
 {
-    private readonly string _supportedAlgorithm;
     private readonly string _keyId;
 
     /// <summary>
@@ -16,7 +15,14 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
     /// <exception cref="ArgumentNullException"></exception>
     public DilithiumSecurityKey(string algorithm)
     {
-        _supportedAlgorithm = algorithm ?? throw new ArgumentNullException(nameof(algorithm));
+        if (algorithm == null) throw new ArgumentNullException(nameof(algorithm));
+        if (algorithm != "CRYDI2" && algorithm != "CRYDI3" && algorithm != "CRYDI5")
+        {
+            throw new NotSupportedException(
+                $"Algorithm {algorithm} is not supported. Supported algorithms: CRYDI2, CRYDI3 and CRYDI5.");
+        }
+
+        SupportedAlgorithm = algorithm;
             
         var dilithiumParameters = GetDilithiumParameters(algorithm);
         var random = new SecureRandom();
@@ -44,7 +50,7 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
     {
         if (jsonWebKey == null) throw new ArgumentNullException(nameof(jsonWebKey));
         if (jsonWebKey.X == null) throw new ArgumentException("X parameter (public key) is missing!");
-        _supportedAlgorithm = jsonWebKey.Alg ?? throw new ArgumentException("jsonWebKey.Alg cannot be null!");
+        SupportedAlgorithm = jsonWebKey.Alg ?? throw new ArgumentException("jsonWebKey.Alg cannot be null!");
         
         var dilithiumParameters = GetDilithiumParameters(jsonWebKey.Alg);
         PublicKey = new DilithiumPublicKeyParameters(dilithiumParameters, Base64UrlEncoder.DecodeBytes(jsonWebKey.X));
@@ -64,15 +70,17 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
     
     public override int KeySize { get; }
 
+    public string SupportedAlgorithm { get; }
+
     public override string KeyId => _keyId;
 
-    public override bool IsSupportedAlgorithm(string algorithm) => _supportedAlgorithm == algorithm;
+    public override bool IsSupportedAlgorithm(string algorithm) => SupportedAlgorithm == algorithm;
 
     private DilithiumParameters GetDilithiumParameters(string algorithm)
     {
-        if (_supportedAlgorithm == algorithm) return DilithiumParameters.Dilithium2;
-        if (_supportedAlgorithm == algorithm) return DilithiumParameters.Dilithium3;
-        if (_supportedAlgorithm == algorithm) return DilithiumParameters.Dilithium5;
+        if (algorithm == "CRYDI2") return DilithiumParameters.Dilithium2;
+        if (algorithm == "CRYDI3") return DilithiumParameters.Dilithium3;
+        if (algorithm == "CRYDI5") return DilithiumParameters.Dilithium5;
 
         throw new NotSupportedException($"Unsupported algorithm type: '{algorithm}'");
     }
@@ -90,7 +98,7 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
             Kty = "LWE",
             Kid = KeyId,
             X = Base64UrlEncoder.Encode(PublicKey.GetEncoded()),
-            Alg = _supportedAlgorithm,
+            Alg = SupportedAlgorithm,
             Use = "sig"
         };
 

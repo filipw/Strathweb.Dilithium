@@ -1,4 +1,5 @@
 using Microsoft.IdentityModel.Tokens;
+using Strathweb.Dilithium.IdentityModel;
 
 namespace Strathweb.AspNetCore.Dilithium.Tests;
 

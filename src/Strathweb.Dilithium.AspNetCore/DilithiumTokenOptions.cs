@@ -1,4 +1,4 @@
-namespace Strathweb.AspNetCore.Dilithium;
+namespace Strathweb.Dilithium.AspNetCore;
 
 public record DilithiumTokenOptions
 {
