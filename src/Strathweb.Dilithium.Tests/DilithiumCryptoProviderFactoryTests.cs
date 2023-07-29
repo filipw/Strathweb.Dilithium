@@ -46,7 +46,7 @@ public class DilithiumCryptoProviderFactoryTests
     [InlineData("CRYDI5")]
     public void SignatureValidation(string algorithm)
     {
-        var content = "test me content"u8.ToArray();
+        var content = Encoding.UTF8.GetBytes($"{TestTokenHeader}.{TestTokenPayload}");
         var key = new DilithiumSecurityKey(algorithm);
         var signatureProvider = key.CryptoProviderFactory.CreateForSigning(key, algorithm);
         var signed = signatureProvider.Sign(content);
@@ -61,7 +61,7 @@ public class DilithiumCryptoProviderFactoryTests
     [InlineData("CRYDI5")]
     public void SignatureValidation_RoundTripFromJWK(string algorithm)
     {
-        var content = "test me content"u8.ToArray();
+        var content = Encoding.UTF8.GetBytes($"{TestTokenHeader}.{TestTokenPayload}");
         var key = new DilithiumSecurityKey(algorithm);
         var signatureProvider = key.CryptoProviderFactory.CreateForSigning(key, algorithm);
         var signed = signatureProvider.Sign(content);
@@ -71,6 +71,32 @@ public class DilithiumCryptoProviderFactoryTests
         var verificationProvider = verificationKey.CryptoProviderFactory.CreateForVerifying(key, algorithm);
         Assert.True(verificationProvider.Verify(content, signed));
     }
+
+    private const string TestTokenHeader = """
+    {
+      "alg": "CRYDI3",
+      "typ": "at+jwt",
+      "kid": "DA9348183FA12769546010E260082E98"
+    }
+    """;
+    
+    private const string TestTokenPayload = """
+    {
+      "iss": "https://localhost:5001",
+      "nbf": 1690484180,
+      "iat": 1690484180,
+      "exp": 1690487780,
+      "aud": [
+        "api1",
+        "https://localhost:5001/resources"
+      ],
+      "scope": [
+        "scope1"
+      ],
+      "client_id": "client",
+      "jti": "E7B10BF1B09E573FAB697E42CBFFC8D9"
+    }
+    """;
 }
 
 class TestSecurityKey : SecurityKey
