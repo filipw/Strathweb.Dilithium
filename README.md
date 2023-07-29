@@ -1,7 +1,8 @@
 # Strathweb.Dilithium
 
 This repo contains a set of libraries facilitating and streamlining the integration of [Crystals-Dilithium](https://pq-crystals.org/dilithium/) signature scheme (a Post-Quantum Cryptography suite) into ASP.NET Core projects - both for the purposes of token signing and their validation.
-The algorithm implementations come from the excellent [BouncyCastle](https://www.bouncycastle.org/csharp/).
+
+The algorithm implementations come from the excellent [BouncyCastle](https://www.bouncycastle.org/csharp/) and supports Dilithium2, Dilithium3 and Dilithium5 parameter sets.
 
 The libraries are intended to be used as the ASP.NET Core implementation of [JOSE and COSE Encoding for Dilithium](https://datatracker.ietf.org/doc/html/draft-ietf-cose-dilithium-01) IETF draft.
 
@@ -9,13 +10,46 @@ The libraries are intended to be used as the ASP.NET Core implementation of [JOS
 
 ### Strathweb.Dilithium.IdentityModel
 
-Contains integration of Dilithium into the ecosystem of [Microsoft.IdentityModel.Tokens](https://www.nuget.org/packages/Microsoft.IdentityModel.Tokens). Those are:
+This is the base package on top of which other features can be built. Contains integration of Dilithium into the ecosystem of [Microsoft.IdentityModel.Tokens](https://www.nuget.org/packages/Microsoft.IdentityModel.Tokens). Those are:
 
  - `DilithiumSecurityKey`, which implements `AsymmetricSecurityKey` abstract class
  - `DilithiumSignatureProvider`, which implements `SignatureProvider` abstract class
  - `DilithiumCryptoProviderFactory`, which extends the default `CryptoProviderFactory`
 
-This is the base package on top of which other features can be built.
+A new instance of a Dilithium public-private pair can be created by using the main constructor that takes in the algorithm (`CRYDI2`, `CRYDI3` or `CRYDI5`) identifier.
+
+```csharp
+var securityKey = new DilithiumSecurityKey("CRYDI3");
+```
+
+The encoded private and public keys can then be read using the relevant properties:
+
+```csharp
+byte[] publicKey = securityKey.PublicKey;
+byte[] privateKey = securityKey.PrivateKey;
+```
+
+They can also be exported out of process (e.g. using base64url encoding) and later used to re-initialize the key:
+
+```csharp
+var securityKey = new DilithiumSecurityKey("CRYDI3", publicKey, privateKey);
+```
+
+The private key is optional - in which case the key can still be used for signature validation but not longer for signing. 
+
+It is also possible to export the key to JSON Web Key format (where it is possible to decide whether the private key should be included or not):
+
+```csharp
+JsonWebKey jwk = securityKey.ToJsonWebKey(includePrivateKey: true);
+```
+
+Such a JWK can be serialized, persisted or published, and later re-imported:
+
+```csharp
+var securityKey = new DilithiumSecurityKey(jwk);
+```
+
+Depending on whether the JWK was exported with the private key or not, the instance of `DilithiumSecurityKey` will be suitable for signing or only for validation of signatures.
 
 ### Strathweb.Dilithium.DuendeIdentityServer
 
@@ -23,7 +57,9 @@ Add-on to [Duende IdentityServer](https://duendesoftware.com/products/identityse
 
 Example usage:
 
-#### Create an in-memory public-private pair
+#### Create an ephemeral public-private pair
+
+This pair will be discarded upon application shutdown.
 
 ```csharp
 builder.Services.AddIdentityServer()
@@ -36,6 +72,17 @@ builder.Services.AddIdentityServer()
 // load the JWK from somewhere e.g. KeyVault or filesystem
 builder.Services.AddIdentityServer()
     .AddDilithiumSigningCredential(new DilithiumSecurityKey(jwk)) // key from the JWK
+    // continue with the rest of IDentity Server configuration
+```
+
+#### Load a Dilithium key from byte array public/private key representations
+
+```csharp
+// load the public key and private key from somewhere e.g. KeyVault or filesystem
+byte[] privateKey = ...
+byte[] publicKey = ...
+builder.Services.AddIdentityServer()
+    .AddDilithiumSigningCredential(new DilithiumSecurityKey("CRYDI3", publicKey, privateKey)) // key from the JWK
     // continue with the rest of IDentity Server configuration
 ```
 
@@ -83,6 +130,7 @@ builder.Services.AddAuthentication().AddJwtBearer(opt =>
 ```
 
 When Dilithium token support is enabled, the extension takes over the management of JWKS fetched from the trusted authority. Those are cached for 24h, but this can be changed in the configuration.
+
 By default any other tokens from the trusted authority are allowed as well. However, it is also possible to restrict the API to only accept Dilithium based signing keys.
 
 ```csharp
