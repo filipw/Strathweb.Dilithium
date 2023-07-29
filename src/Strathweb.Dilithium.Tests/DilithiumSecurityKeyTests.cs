@@ -72,7 +72,6 @@ public class DilithiumSecurityKeyTests
         Assert.True(importedKey.IsSupportedAlgorithm(algorithm));
         Assert.NotNull(importedKey.CryptoProviderFactory);
         Assert.Equal(typeof(DilithiumCryptoProviderFactory), importedKey.CryptoProviderFactory.GetType());
-
     }
     
     [Fact]
