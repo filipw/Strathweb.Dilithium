@@ -9,6 +9,23 @@ public class DilithiumSecurityKeyTests
     [InlineData("CRYDI2")]
     [InlineData("CRYDI3")]
     [InlineData("CRYDI5")]
+    public void CanInit(string algorithm)
+    {
+        var securityKey = new DilithiumSecurityKey(algorithm);
+        
+        Assert.NotNull(securityKey.KeyId);
+        Assert.NotNull(securityKey.PublicKey);
+        Assert.NotNull(securityKey.PrivateKey);
+        Assert.True(securityKey.IsSupportedAlgorithm(algorithm));
+        Assert.NotNull(securityKey.CryptoProviderFactory);
+        Assert.Equal(typeof(DilithiumCryptoProviderFactory), securityKey.CryptoProviderFactory.GetType());
+        Assert.Equal(PrivateKeyStatus.Exists, securityKey.PrivateKeyStatus);
+    }
+    
+    [Theory]
+    [InlineData("CRYDI2")]
+    [InlineData("CRYDI3")]
+    [InlineData("CRYDI5")]
     public void CanExportToJWK(string algorithm)
     {
         var securityKey = new DilithiumSecurityKey(algorithm);
@@ -51,7 +68,11 @@ public class DilithiumSecurityKeyTests
         Assert.Equal(securityKey.PublicKey.GetEncoded(), importedKey.PublicKey.GetEncoded());
         Assert.NotNull(importedKey.PrivateKey);
         Assert.Equal(securityKey.PrivateKey.GetEncoded(), importedKey.PrivateKey.GetEncoded());
+        Assert.Equal(PrivateKeyStatus.Exists, importedKey.PrivateKeyStatus);
         Assert.True(importedKey.IsSupportedAlgorithm(algorithm));
+        Assert.NotNull(importedKey.CryptoProviderFactory);
+        Assert.Equal(typeof(DilithiumCryptoProviderFactory), importedKey.CryptoProviderFactory.GetType());
+
     }
     
     [Fact]
@@ -65,6 +86,8 @@ public class DilithiumSecurityKeyTests
         Assert.Equal(securityKey.KeyId, importedKey.KeyId);
         Assert.Equal(securityKey.PublicKey.GetEncoded(), importedKey.PublicKey.GetEncoded());
         Assert.True(importedKey.IsSupportedAlgorithm("CRYDI2"));
+        Assert.NotNull(importedKey.CryptoProviderFactory);
+        Assert.Equal(typeof(DilithiumCryptoProviderFactory), importedKey.CryptoProviderFactory.GetType());
         Assert.Null(importedKey.PrivateKey);
         Assert.False(importedKey.HasPrivateKey);
         Assert.Equal(PrivateKeyStatus.Unknown, importedKey.PrivateKeyStatus);
