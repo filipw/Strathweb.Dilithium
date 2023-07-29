@@ -43,14 +43,21 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
     /// X property is mandatory and will be used to init public key.
     /// If the key contains D property, it will be used to init private key.
     /// </summary>
-    /// <param name="jsonWebKey"></param>
+    /// <param name="jsonWebKey">Supported algorithms: CRYDI2, CRYDI3 and CRYDI5</param>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException"></exception>
     public DilithiumSecurityKey(JsonWebKey jsonWebKey)
     {
         if (jsonWebKey == null) throw new ArgumentNullException(nameof(jsonWebKey));
         if (jsonWebKey.X == null) throw new ArgumentException("X parameter (public key) is missing!");
-        SupportedAlgorithm = jsonWebKey.Alg ?? throw new ArgumentException("jsonWebKey.Alg cannot be null!");
+        if (jsonWebKey.Alg == null) throw new ArgumentException("Alg parameter is missing!");
+        if (jsonWebKey.Alg != "CRYDI2" && jsonWebKey.Alg != "CRYDI3" && jsonWebKey.Alg != "CRYDI5")
+        {
+            throw new NotSupportedException(
+                $"Algorithm {jsonWebKey.Alg} is not supported. Supported algorithms: CRYDI2, CRYDI3 and CRYDI5.");
+        }
+
+        SupportedAlgorithm = jsonWebKey.Alg;
         
         var dilithiumParameters = GetDilithiumParameters(jsonWebKey.Alg);
         PublicKey = new DilithiumPublicKeyParameters(dilithiumParameters, Base64UrlEncoder.DecodeBytes(jsonWebKey.X));
@@ -62,6 +69,39 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
 
         _keyId = jsonWebKey.KeyId;
         KeySize = jsonWebKey.KeySize;
+        CryptoProviderFactory = new DilithiumCryptoProviderFactory();
+    }
+
+    /// <summary>
+    /// Load a key from byte representation of public and an optional private key.
+    /// </summary>
+    /// <param name="algorithm">Supported algorithms: CRYDI2, CRYDI3 and CRYDI5</param>
+    /// <param name="keyId"></param>
+    /// <param name="publicKey">Byte encoded Dilithium public key.</param>
+    /// <param name="privateKey">Byte encoded Dilithium private key (optional).</param>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="NotSupportedException"></exception>
+    public DilithiumSecurityKey(string algorithm, string keyId, byte[] publicKey, byte[]? privateKey = null)
+    {
+        if (algorithm == null) throw new ArgumentNullException(nameof(algorithm));
+        if (keyId == null) throw new ArgumentNullException(nameof(keyId));
+        if (publicKey == null) throw new ArgumentNullException(nameof(publicKey));
+        if (algorithm != "CRYDI2" && algorithm != "CRYDI3" && algorithm != "CRYDI5")
+        {
+            throw new NotSupportedException(
+                $"Algorithm {algorithm} is not supported. Supported algorithms: CRYDI2, CRYDI3 and CRYDI5.");
+        }
+        SupportedAlgorithm = algorithm;
+        
+        var dilithiumParameters = GetDilithiumParameters(algorithm);
+        PublicKey = new DilithiumPublicKeyParameters(dilithiumParameters, publicKey);
+
+        if (privateKey != null)
+        {
+            PrivateKey = GetPrivateKeyParametersFromEncodedKey(dilithiumParameters, privateKey);
+        }
+
+        _keyId = keyId;
         CryptoProviderFactory = new DilithiumCryptoProviderFactory();
     }
     
