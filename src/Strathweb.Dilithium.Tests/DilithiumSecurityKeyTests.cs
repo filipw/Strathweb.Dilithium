@@ -91,4 +91,23 @@ public class DilithiumSecurityKeyTests
         Assert.False(importedKey.HasPrivateKey);
         Assert.Equal(PrivateKeyStatus.Unknown, importedKey.PrivateKeyStatus);
     }
+    
+    [Theory]
+    [InlineData("CRYDI2")]
+    [InlineData("CRYDI3")]
+    [InlineData("CRYDI5")]
+    public void CanImportFromByteArrayEncodedKeys(string algorithm)
+    {
+        var securityKey = new DilithiumSecurityKey(algorithm);
+        var importedKey = new DilithiumSecurityKey(algorithm, securityKey.KeyId, securityKey.PublicKey.GetEncoded(), securityKey.PrivateKey.GetEncoded());
+        
+        Assert.Equal(securityKey.KeyId, importedKey.KeyId);
+        Assert.Equal(securityKey.PublicKey.GetEncoded(), importedKey.PublicKey.GetEncoded());
+        Assert.NotNull(importedKey.PrivateKey);
+        Assert.Equal(securityKey.PrivateKey.GetEncoded(), importedKey.PrivateKey.GetEncoded());
+        Assert.Equal(PrivateKeyStatus.Exists, importedKey.PrivateKeyStatus);
+        Assert.True(importedKey.IsSupportedAlgorithm(algorithm));
+        Assert.NotNull(importedKey.CryptoProviderFactory);
+        Assert.Equal(typeof(DilithiumCryptoProviderFactory), importedKey.CryptoProviderFactory.GetType());
+    }
 }
