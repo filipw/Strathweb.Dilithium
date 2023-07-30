@@ -7,6 +7,29 @@ namespace Strathweb.AspNetCore.Dilithium.Tests;
 public class DilithiumCryptoProviderFactoryTests
 {
     [Fact]
+    public void IsSupportedAlgorithm_ReturnsFalseForNonDilithiumKey()
+    {
+        var testKey = new TestSecurityKey();
+        var factory = new DilithiumCryptoProviderFactory();
+        Assert.False(factory.IsSupportedAlgorithm("CRYDI3", testKey));
+    }
+    
+    [Fact]
+    public void IsSupportedAlgorithm_ReturnsFalseForNonDilithiumAlgo()
+    {
+        var factory = new DilithiumCryptoProviderFactory();
+        Assert.False(factory.IsSupportedAlgorithm("Foo"));
+    }
+    
+    [Fact]
+    public void IsSupportedAlgorithm_ReturnsFalseForNonDilithiumAlgo2()
+    {
+        var testKey = new DilithiumSecurityKey("CRYDI3");
+        var factory = new DilithiumCryptoProviderFactory();
+        Assert.False(factory.IsSupportedAlgorithm("Foo", testKey));
+    }
+    
+    [Fact]
     public void CreateForSigning_ThrowsForNonDilithiumKeys()
     {
         var testKey = new TestSecurityKey();
