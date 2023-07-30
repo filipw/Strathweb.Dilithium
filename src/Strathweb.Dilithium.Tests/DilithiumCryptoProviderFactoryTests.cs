@@ -44,7 +44,7 @@ public class DilithiumCryptoProviderFactoryTests
     [InlineData("CRYDI2")]
     [InlineData("CRYDI3")]
     [InlineData("CRYDI5")]
-    public void SignatureValidation(string algorithm)
+    public void SignAndVerify(string algorithm)
     {
         var content = Encoding.UTF8.GetBytes($"{TestTokenHeader}.{TestTokenPayload}");
         var key = new DilithiumSecurityKey(algorithm);
@@ -54,12 +54,12 @@ public class DilithiumCryptoProviderFactoryTests
         var verificationProvider = key.CryptoProviderFactory.CreateForVerifying(key, algorithm);
         Assert.True(verificationProvider.Verify(content, signed));
     }
-    
+
     [Theory]
     [InlineData("CRYDI2")]
     [InlineData("CRYDI3")]
     [InlineData("CRYDI5")]
-    public void SignatureValidation_RoundTripFromJWK(string algorithm)
+    public void SignAndVerify_RoundTripFromJWK(string algorithm)
     {
         var content = Encoding.UTF8.GetBytes($"{TestTokenHeader}.{TestTokenPayload}");
         var key = new DilithiumSecurityKey(algorithm);

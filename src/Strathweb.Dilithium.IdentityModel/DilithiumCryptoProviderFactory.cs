@@ -46,4 +46,7 @@ public class DilithiumCryptoProviderFactory : CryptoProviderFactory
 
     public override bool IsSupportedAlgorithm(string algorithm, SecurityKey key) => 
         key is DilithiumSecurityKey lweKey && lweKey.IsSupportedAlgorithm(algorithm);
+
+    public override bool IsSupportedAlgorithm(string algorithm) => 
+        algorithm == "CRYDI2" || algorithm == "CRYDI3" || algorithm == "CRYDI5";
 }
