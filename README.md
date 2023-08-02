@@ -143,3 +143,6 @@ builder.Services.AddAuthentication().AddJwtBearer(opt =>
     opt.ConfigureDilithiumTokenSupport(dopt => dopt.AllowNonMlweKeys = false;);
 });
 ```
+
+## License
+[MIT](https://github.com/filipw/Strathweb.Dilithium/blob/main/LICENSE)
