@@ -66,12 +66,22 @@ builder.Services.AddIdentityServer()
     .AddDilithiumSigningCredential(new DilithiumSecurityKey("CRYDI3")) // new key per startup
 ```
 
-#### Load a Dilithium key from a JSON Web Key format 
+#### Load a Dilithium key from a JSON Web Key format
+
+It is possible to manually load JWK (`Microsoft.IdentityModel.Tokens.JsonWebKey`) from some source, such as a key vault, and then use it to initialize the `DilithiumSecurityKey`:
 
 ```csharp
 // load the JWK from somewhere e.g. KeyVault or filesystem
 builder.Services.AddIdentityServer()
     .AddDilithiumSigningCredential(new DilithiumSecurityKey(jwk)) // key from the JWK
+    // continue with the rest of IDentity Server configuration
+```
+
+Alternatively, it can also be loaded from the file system (using a path relative to the current directory or an absolute one):
+
+```csharp
+builder.Services.AddIdentityServer()
+    .AddDilithiumSigningCredential(pathToDilithiumJWK) // key from the JWK on the filesystem
     // continue with the rest of IDentity Server configuration
 ```
 
