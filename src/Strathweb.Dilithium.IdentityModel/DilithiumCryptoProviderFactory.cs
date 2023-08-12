@@ -28,7 +28,7 @@ public class DilithiumCryptoProviderFactory : CryptoProviderFactory
         }
         if (_dilithiumVerifiers.TryGetValue(cacheKey, out var signer))
         {
-            return new DilithiumSignatureProvider(lweKey, algorithm, signer);
+            return new DilithiumSignatureProvider(lweKey, algorithm, signer, forSigning);
         }
 
         var newSigner = new DilithiumSigner();
@@ -41,7 +41,7 @@ public class DilithiumCryptoProviderFactory : CryptoProviderFactory
         
         newSigner.Init(forSigning, publicOrPrivateKey);
         _dilithiumVerifiers[cacheKey] = newSigner;
-        return new DilithiumSignatureProvider(lweKey, algorithm, newSigner);
+        return new DilithiumSignatureProvider(lweKey, algorithm, newSigner, forSigning);
     }
 
     public override bool IsSupportedAlgorithm(string algorithm, SecurityKey key) => 

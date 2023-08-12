@@ -77,6 +77,18 @@ public class DilithiumCryptoProviderFactoryTests
         var verificationProvider = key.CryptoProviderFactory.CreateForVerifying(key, algorithm);
         Assert.True(verificationProvider.Verify(content, signed));
     }
+    
+    [Theory]
+    [InlineData("CRYDI2")]
+    [InlineData("CRYDI3")]
+    [InlineData("CRYDI5")]
+    public void CreateForVerifying_SigningThrows(string algorithm)
+    {
+        var content = Encoding.UTF8.GetBytes($"{TestTokenHeader}.{TestTokenPayload}");
+        var key = new DilithiumSecurityKey(algorithm);
+        var signatureProvider = key.CryptoProviderFactory.CreateForVerifying(key, algorithm);
+        Assert.Throws<NotSupportedException>(() => signatureProvider.Sign(content));
+    }
 
     [Theory]
     [InlineData("CRYDI2")]
