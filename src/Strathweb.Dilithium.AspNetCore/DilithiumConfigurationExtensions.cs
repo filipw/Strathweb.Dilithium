@@ -38,6 +38,11 @@ public static class DilithiumConfigurationExtensions
                 return Enumerable.Empty<SecurityKey>();
             }
 
+            if (dilithiumTokenOptions.FixedSecurityKeys.Any())
+            {
+                return dilithiumTokenOptions.FixedSecurityKeys;
+            }
+
             if (!dilithiumTokenOptions.DisableCache && KeyCache.Default.TryGetValue(kid, out var result) &&
                 result is ICollection<SecurityKey> cachedSecurityKeys)
             {

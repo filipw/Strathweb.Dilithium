@@ -3,7 +3,6 @@ using Strathweb.Dilithium.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
 builder.Services.AddAuthentication().AddJwtBearer(opt =>
 {
     opt.Authority = "https://localhost:5001";

@@ -1,7 +1,7 @@
 using Microsoft.IdentityModel.Tokens;
 using Strathweb.Dilithium.IdentityModel;
 
-namespace Strathweb.AspNetCore.Dilithium.Tests;
+namespace Strathweb.Dilithium.Tests;
 
 public class DilithiumSecurityKeyTests
 {

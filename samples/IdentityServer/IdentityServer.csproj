@@ -7,7 +7,6 @@
   
   <ItemGroup>
     <PackageReference Include="Duende.IdentityServer" Version="6.2.0" />
-    <PackageReference Include="BouncyCastle.Cryptography" Version="2.2.1" />
   </ItemGroup>
   
   <ItemGroup>
