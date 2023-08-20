@@ -10,6 +10,8 @@ The libraries are intended to be used as the ASP.NET Core implementation of [JOS
 
 ### Strathweb.Dilithium.IdentityModel
 
+[![NuGet](https://img.shields.io/nuget/v/Strathweb.Dilithium.IdentityModel.svg)](https://www.nuget.org/packages/Strathweb.Dilithium.IdentityModel/)
+
 This is the base package on top of which other features can be built. Contains integration of Dilithium into the ecosystem of [Microsoft.IdentityModel.Tokens](https://www.nuget.org/packages/Microsoft.IdentityModel.Tokens). Those are:
 
  - `DilithiumSecurityKey`, which implements `AsymmetricSecurityKey` abstract class
@@ -52,6 +54,8 @@ var securityKey = new DilithiumSecurityKey(jwk);
 Depending on whether the JWK was exported with the private key or not, the instance of `DilithiumSecurityKey` will be suitable for signing or only for validation of signatures.
 
 ### Strathweb.Dilithium.DuendeIdentityServer
+
+[![NuGet](https://img.shields.io/nuget/v/Strathweb.Dilithium.DuendeIdentityServer.svg)](https://www.nuget.org/packages/Strathweb.Dilithium.DuendeIdentityServer/)
 
 Add-on to [Duende IdentityServer](https://duendesoftware.com/products/identityserver), which allows for registering a `DilithiumSecurityKey` as valid token signing credential. Once configured, the Dilithium key can be used for token signing for API resources that are flagged as compatible with the Dilithium algorithms. The public key is also going to get announced with the JWKS document.
 
@@ -123,6 +127,8 @@ Once registered, the Identity Server will announce the public part of the Dilith
 The JWT tokens issued by the Identity Server will contains the `"alg": "CRYDI3"` in the header; otherwise the token will be indistinguishable from the other tokens.
 
 ### Strathweb.Dilithium.AspNetCore
+
+[![NuGet](https://img.shields.io/nuget/v/Strathweb.Dilithium.AspNetCore.svg)](https://www.nuget.org/packages/Strathweb.Dilithium.AspNetCore/)
 
 Add-on for [Microsoft.AspNetCore.Authentication.JwtBearer](https://www.nuget.org/packages/Microsoft.AspNetCore.Authentication.JwtBearer) package, allowing for enabling Dilithium-signed JWT token validation for the `Bearer` scheme.
 
