@@ -27,7 +27,7 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    if: github.event_name == "release" # This job runs only if the event is a release
+    if: github.event_name == release
 
     steps:
       - uses: actions/checkout@v3
