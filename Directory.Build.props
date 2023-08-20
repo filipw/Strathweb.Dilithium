@@ -2,5 +2,10 @@
     <PropertyGroup>
         <Version>0.1.0</Version>
         <Deterministic>true</Deterministic>
+        <RepositoryUrl>https://github.com/filipw/Strathweb.Dilithium.git</RepositoryUrl>
+        <PackageTags>asp.net;security;post-quantum;dilithium;quantum;cryptography</PackageTags>
+        <PackageIconUrl>https://raw.githubusercontent.com/filipw/Strathweb.Dilithium/master/strathweb.png</PackageIconUrl>
+        <PackageProjectUrl>https://github.com/filipw/Strathweb.Dilithium</PackageProjectUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
     </PropertyGroup>
 </Project>
