@@ -50,19 +50,19 @@ app.Map("/idp", subapp =>
 app.Run(async ctx =>
 {
     var authn = ctx.RequestServices.GetRequiredService<IAuthenticationService>();
-    var x = await authn.AuthenticateAsync(ctx, "Bearer");
-    var principal = x.Principal;
+    var authenticationResult = await authn.AuthenticateAsync(ctx, "Bearer");
+    if (authenticationResult is { Succeeded: true, Principal: not null })
+    {
+        var authz = ctx.RequestServices.GetRequiredService<IAuthorizationService>();
+        var authorizationResult = await authz.AuthorizeAsync(authenticationResult.Principal, "api");
+        if (authorizationResult.Succeeded)
+        {
+            await ctx.Response.WriteAsync("hello!");
+            return;
+        }
+    }
     
-    var authz = ctx.RequestServices.GetRequiredService<IAuthorizationService>();
-    var result = await authz.AuthorizeAsync(principal, "api");
-    if (result.Succeeded)
-    {
-        await ctx.Response.WriteAsync("hello!");
-    }
-    else
-    {
-        ctx.Response.StatusCode = 401;
-    }
+    ctx.Response.StatusCode = 401;
 });
 
 app.Run();
