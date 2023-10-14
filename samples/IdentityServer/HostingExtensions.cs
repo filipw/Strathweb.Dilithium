@@ -9,6 +9,7 @@ using Duende.IdentityServer.Services.KeyManagement;
 using Duende.IdentityServer.Stores;
 using Microsoft.IdentityModel.Tokens;
 using Strathweb.Dilithium.DuendeIdentityServer;
+using Strathweb.Dilithium.DuendeIdentityServer.KeyManagement;
 using Strathweb.Dilithium.IdentityModel;
 using JsonWebKey = Microsoft.IdentityModel.Tokens.JsonWebKey;
 

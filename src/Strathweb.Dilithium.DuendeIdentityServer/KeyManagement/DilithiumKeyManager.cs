@@ -15,15 +15,10 @@ using Duende.IdentityServer.Internal;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Duende.IdentityServer;
-using Duende.IdentityServer.Models;
-using Duende.IdentityServer.ResponseHandling;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Services.KeyManagement;
-using Duende.IdentityServer.Validation;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.IdentityModel.Tokens;
+using Strathweb.Dilithium.DuendeIdentityServer.KeyManagement;
 using Strathweb.Dilithium.IdentityModel;
-using JsonWebKey = Duende.IdentityServer.Models.JsonWebKey;
 
 namespace Strathweb.Dilithium.DuendeIdentityServer;
 
@@ -696,153 +691,6 @@ public class DilithiumKeyManager : IKeyManager
     }
 }
 
-public static class KeyManagementExtensions
-{
-    internal static bool IsRetired(this KeyManagementOptions options, TimeSpan age)
-    {
-        return (age >= options.KeyRetirementAge());
-    }
-
-    internal static bool IsExpired(this KeyManagementOptions options, TimeSpan age)
-    {
-        return (age >= options.RotationInterval);
-    }
-    
-    internal static TimeSpan KeyRetirementAge(this KeyManagementOptions options)
-    {
-        return options.RotationInterval + options.RetentionDuration;
-    }
-
-    internal static bool IsWithinInitializationDuration(this KeyManagementOptions options, TimeSpan age)
-    {
-        return (age <= options.InitializationDuration);
-    }
-
-    internal static IEnumerable<string> AllowedSigningAlgorithmNames(this KeyManagementOptions options) 
-        => options.SigningAlgorithms.Select(x => x.Name);
-
-    internal static TimeSpan GetAge(this ISystemClock clock, DateTime date)
-    {
-        var now = clock.UtcNow.UtcDateTime;
-        if (date > now) now = date;
-        return now.Subtract(date);
-    }
-    
-    internal static bool IsRsaKey(this SigningAlgorithmOptions opt) => opt.Name.StartsWith("R") || opt.Name.StartsWith("P");
-    internal static bool IsEcKey(this SigningAlgorithmOptions opt) => opt.Name.StartsWith("E");
-    internal static bool IsDilithiumKey(this SigningAlgorithmOptions opt) => opt.Name.StartsWith("CRYDI");
-    
-    internal static string GetCurveNameFromSigningAlgorithm(this SigningAlgorithmOptions opt)
-    {
-        return opt.Name switch
-        {
-            "ES256" => "P-256",
-            "ES384" => "P-384",
-            "ES512" => "P-521",
-            _ => null
-        };
-    }
-}
-
-public class DilithiumKeyContainer : KeyContainer
-{
-    /// <summary>
-    /// Constructor for DilithiumKeyContainer.
-    /// </summary>
-    public DilithiumKeyContainer() : base()
-    {
-    }
-
-    /// <summary>
-    /// Constructor for DilithiumKeyContainer.
-    /// </summary>
-    public DilithiumKeyContainer(DilithiumSecurityKey key, string algorithm, DateTime created)
-        : base(key.KeyId, algorithm, created)
-    {
-        D = key.PrivateKey.GetEncoded();
-        X = key.PublicKey.GetEncoded();
-    }
-
-    /// <summary>
-    /// Private key
-    /// </summary>
-    public byte[] D { get; set; }
-
-    /// <summary>
-    /// Public key
-    /// </summary>
-    public byte[] X { get; set; }
-
-    /// <inheritdoc/>
-    public override AsymmetricSecurityKey ToSecurityKey()
-    {
-        return new DilithiumSecurityKey(Algorithm, Id, X, D);
-    }
-}
-
-public class DilithiumDataProtectionKeyProtector : ISigningKeyProtector
-{
-    private readonly IDataProtector _dataProtectionProvider;
-    private readonly KeyManagementOptions _options;
-
-    public DilithiumDataProtectionKeyProtector(KeyManagementOptions options, IDataProtectionProvider dataProtectionProvider)
-    {
-        _options = options;
-        _dataProtectionProvider = dataProtectionProvider.CreateProtector(nameof(DataProtectionKeyProtector));
-    }
-    
-    public SerializedKey Protect(KeyContainer key)
-    {
-        var data = KeySerializer.Serialize(key);
-            
-        if (_options.DataProtectKeys)
-        {
-            data = _dataProtectionProvider.Protect(data);
-        }
-            
-        return new SerializedKey
-        {
-            Version = 1,
-            Created = DateTime.UtcNow,
-            Id = key.Id,
-            Algorithm = key.Algorithm,
-            IsX509Certificate = key.HasX509Certificate,
-            Data = data,
-            DataProtected = _options.DataProtectKeys,
-        };
-    }
-    
-    public KeyContainer Unprotect(SerializedKey key)
-    {
-        var data = key.DataProtected ? 
-            _dataProtectionProvider.Unprotect(key.Data) : 
-            key.Data;
-
-        if (key.IsX509Certificate)
-        {
-            return KeySerializer.Deserialize<X509KeyContainer>(data);
-        }
-
-        if (key.Algorithm.StartsWith("R") || key.Algorithm.StartsWith("P"))
-        {
-            return KeySerializer.Deserialize<RsaKeyContainer>(data);
-        }
-            
-        if (key.Algorithm.StartsWith("E"))
-        {
-            return KeySerializer.Deserialize<EcKeyContainer>(data);
-        }
-        
-        if (key.Algorithm.StartsWith("CRYDI"))
-        {
-            Console.WriteLine("Deserializing protected dilithium key");
-            return KeySerializer.Deserialize<DilithiumKeyContainer>(data);
-        }
-
-        throw new Exception($"Invalid Algorithm: {key.Algorithm} for kid: {key.Id}");
-    }
-}
-
 internal static class KeySerializer
 {
     static JsonSerializerOptions _settings =
@@ -859,40 +707,5 @@ internal static class KeySerializer
     public static T Deserialize<T>(string json)
     {
         return JsonSerializer.Deserialize<T>(json, _settings);
-    }
-}
-
-public class DilithiumAwareDiscoveryResponseGenerator : DiscoveryResponseGenerator
-{
-    public DilithiumAwareDiscoveryResponseGenerator(IdentityServerOptions options, IResourceStore resourceStore, IKeyMaterialService keys, ExtensionGrantValidator extensionGrants, ISecretsListParser secretParsers, IResourceOwnerPasswordValidator resourceOwnerValidator, ILogger<DiscoveryResponseGenerator> logger) : base(options, resourceStore, keys, extensionGrants, secretParsers, resourceOwnerValidator, logger)
-    {
-    }
-
-    public override async Task<IEnumerable<JsonWebKey>> CreateJwkDocumentAsync()
-    {
-        var publishedKeys = (await base.CreateJwkDocumentAsync()).ToList();
-        var dilithiumKeys = (await Keys.GetValidationKeysAsync()).Where(key => key.Key is DilithiumSecurityKey);
-
-        foreach (var dilithiumKey in dilithiumKeys)
-        {
-            var jsonWebKey = (dilithiumKey.Key as DilithiumSecurityKey)?.ToJsonWebKey(includePrivateKey: false);
-            var webKey = new JsonWebKey
-            {
-                kty = jsonWebKey.Kty,
-                use = jsonWebKey.Use ?? "sig",
-                kid = jsonWebKey.Kid,
-                x5t = jsonWebKey.X5t,
-                e = jsonWebKey.E,
-                n = jsonWebKey.N,
-                x5c = jsonWebKey.X5c?.Count == 0 ? null : jsonWebKey.X5c.ToArray(),
-                alg = jsonWebKey.Alg,
-                crv = jsonWebKey.Crv,
-                x = jsonWebKey.X,
-                y = jsonWebKey.Y
-            };
-            publishedKeys.Add(webKey);
-        }
-
-        return publishedKeys;
     }
 }
