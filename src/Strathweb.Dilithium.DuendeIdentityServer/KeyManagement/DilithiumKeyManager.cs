@@ -2,25 +2,17 @@
 // See LICENSE in the project root for license information.
 
 
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Duende.IdentityServer.Stores;
-using Duende.IdentityServer.Configuration;
-using Microsoft.AspNetCore.Authentication;
-using Duende.IdentityServer.Extensions;
-using Duende.IdentityServer.Internal;
 using System.Security.Cryptography;
-using System.Text.Json;
-using Duende.IdentityServer;
+using Duende.IdentityServer.Configuration;
+using Duende.IdentityServer.Internal;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Services.KeyManagement;
-using Strathweb.Dilithium.DuendeIdentityServer.KeyManagement;
+using Duende.IdentityServer.Stores;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Logging;
 using Strathweb.Dilithium.IdentityModel;
 
-namespace Strathweb.Dilithium.DuendeIdentityServer;
+namespace Strathweb.Dilithium.DuendeIdentityServer.KeyManagement;
 
 /// <summary>
 /// Implementation of IKeyManager that creates, stores, and rotates signing keys.
@@ -688,24 +680,5 @@ public class DilithiumKeyManager : IKeyManager
         _logger.LogTrace("Key with kid {kid} is active.", key.Id);
 
         return true;
-    }
-}
-
-internal static class KeySerializer
-{
-    static JsonSerializerOptions _settings =
-        new JsonSerializerOptions
-        {
-            IncludeFields = true
-        };
-
-    public static string Serialize<T>(T item)
-    {
-        return JsonSerializer.Serialize(item, item.GetType(), _settings);
-    }
-
-    public static T Deserialize<T>(string json)
-    {
-        return JsonSerializer.Deserialize<T>(json, _settings);
     }
 }
