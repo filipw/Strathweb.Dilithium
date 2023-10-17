@@ -26,6 +26,12 @@ public static class DilithiumIdentityServerExtensions
         
         if (dilithiumSupportOptions.EnableKeyManagement)
         {
+            if (dilithiumSupportOptions.StaticKey != null)
+            {
+                throw new ArgumentException(
+                    "It is not possible to use both automatic key management and a static key. Choose one or the other.");
+            }
+            
             if (dilithiumSupportOptions.KeyManagementAlgorithm != "CRYDI2" && dilithiumSupportOptions.KeyManagementAlgorithm != "CRYDI3" && dilithiumSupportOptions.KeyManagementAlgorithm != "CRYDI5")
             {
                 throw new NotSupportedException(
@@ -57,6 +63,10 @@ public static class DilithiumIdentityServerExtensions
             builder.Services.AddTransient<IKeyManager, DilithiumKeyManager>();
             builder.Services.AddTransient<ISigningKeyProtector, DilithiumDataProtectionKeyProtector>();
             builder.Services.AddTransient<IDiscoveryResponseGenerator, DilithiumAwareDiscoveryResponseGenerator>();
+        } 
+        else if (dilithiumSupportOptions.StaticKey is { } fixedKey)
+        {
+            builder.AddDilithiumSigningCredential(fixedKey);
         }
 
         return builder;
