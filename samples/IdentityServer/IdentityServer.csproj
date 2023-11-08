@@ -12,4 +12,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Strathweb.Dilithium.DuendeIdentityServer\Strathweb.Dilithium.DuendeIdentityServer.csproj" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="keys\is-signing-key-30F471175932A17FAD74ABFBE856E9AA.json" />
+  </ItemGroup>
 </Project>
