@@ -51,7 +51,7 @@ public static class DilithiumConfigurationExtensions
             }
 
             var serverUrl = tokenValidationParameters.ValidIssuer ??
-                            tokenValidationParameters.ValidIssuers.FirstOrDefault() ?? options.Authority;
+                            tokenValidationParameters.ValidIssuers?.FirstOrDefault() ?? options.Authority;
 
             if (serverUrl == null)
                 throw new Exception(
