@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -33,7 +34,7 @@ public static class DilithiumConfigurationExtensions
         var lweCryptoProvideFactory = new DilithiumCryptoProviderFactory();
         options.TokenValidationParameters.IssuerSigningKeyResolver = (_, securityToken, kid, tokenValidationParameters) =>
         {
-            if (securityToken is not JwtSecurityToken _)
+            if (securityToken is not JwtSecurityToken && securityToken is not JsonWebToken)
             {
                 return Enumerable.Empty<SecurityKey>();
             }
@@ -50,7 +51,7 @@ public static class DilithiumConfigurationExtensions
             }
 
             var serverUrl = tokenValidationParameters.ValidIssuer ??
-                            tokenValidationParameters.ValidIssuers.FirstOrDefault() ?? options.Authority;
+                            tokenValidationParameters.ValidIssuers?.FirstOrDefault() ?? options.Authority;
 
             if (serverUrl == null)
                 throw new Exception(
