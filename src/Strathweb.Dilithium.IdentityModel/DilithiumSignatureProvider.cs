@@ -29,6 +29,18 @@ public class DilithiumSignatureProvider : SignatureProvider
     public override bool Verify(byte[] input, byte[] signature) => 
         _signer.VerifySignature(input, signature);
 
+    // todo: it would be good to avoid copying here
+    public override bool Verify(byte[] input, int inputOffset, int inputLength, byte[] signature, int signatureOffset, int signatureLength)
+    {
+        var actualInput = new byte[inputLength];
+        Array.Copy(input, inputOffset, actualInput, 0, inputLength);
+
+        var actualSignature = new byte[signatureLength];
+        Array.Copy(signature, signatureOffset, actualSignature, 0, signatureLength);
+
+        return _signer.VerifySignature(actualInput, actualSignature);
+    }
+
     protected override void Dispose(bool disposing)
     {
     }
