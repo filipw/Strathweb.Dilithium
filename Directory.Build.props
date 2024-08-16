@@ -1,6 +1,6 @@
 <Project>
     <PropertyGroup>
-        <Version>0.1.0</Version>
+        <Version>0.2.0</Version>
         <Deterministic>true</Deterministic>
         <RepositoryUrl>https://github.com/filipw/Strathweb.Dilithium.git</RepositoryUrl>
         <PackageTags>asp.net;security;post-quantum;dilithium;quantum;cryptography</PackageTags>
