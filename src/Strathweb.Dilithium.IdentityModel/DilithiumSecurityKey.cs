@@ -132,7 +132,7 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
     public override bool HasPrivateKey => PrivateKey != null;
 
     public override PrivateKeyStatus PrivateKeyStatus =>
-        PrivateKey == null ? PrivateKeyStatus.Unknown : PrivateKeyStatus.Exists;
+        PrivateKey == null ? PrivateKeyStatus.DoesNotExist : PrivateKeyStatus.Exists;
 
     public JsonWebKey ToJsonWebKey(bool includePrivateKey)
     {
