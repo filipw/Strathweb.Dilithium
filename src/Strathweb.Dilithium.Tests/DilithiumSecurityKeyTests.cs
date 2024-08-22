@@ -89,7 +89,7 @@ public class DilithiumSecurityKeyTests
         Assert.Equal(typeof(DilithiumCryptoProviderFactory), importedKey.CryptoProviderFactory.GetType());
         Assert.Null(importedKey.PrivateKey);
         Assert.False(importedKey.HasPrivateKey);
-        Assert.Equal(PrivateKeyStatus.Unknown, importedKey.PrivateKeyStatus);
+        Assert.Equal(PrivateKeyStatus.DoesNotExist, importedKey.PrivateKeyStatus);
     }
     
     [Theory]
