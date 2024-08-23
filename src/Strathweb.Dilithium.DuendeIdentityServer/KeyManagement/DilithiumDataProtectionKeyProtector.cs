@@ -60,7 +60,6 @@ public class DilithiumDataProtectionKeyProtector : ISigningKeyProtector
         
         if (key.Algorithm.StartsWith("CRYDI"))
         {
-            Console.WriteLine("Deserializing protected dilithium key");
             return KeySerializer.Deserialize<DilithiumKeyContainer>(data);
         }
 
