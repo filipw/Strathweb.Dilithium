@@ -78,7 +78,7 @@ It is possible to manually load JWK (`Microsoft.IdentityModel.Tokens.JsonWebKey`
 // load the JWK from somewhere e.g. KeyVault or filesystem
 builder.Services.AddIdentityServer()
     .AddDilithiumSigningCredential(new DilithiumSecurityKey(jwk)) // key from the JWK
-    // continue with the rest of IDentity Server configuration
+    // continue with the rest of Identity Server configuration
 ```
 
 Alternatively, it can also be loaded from the file system (using a path relative to the current directory or an absolute one):
@@ -86,7 +86,7 @@ Alternatively, it can also be loaded from the file system (using a path relative
 ```csharp
 builder.Services.AddIdentityServer()
     .AddDilithiumSigningCredential(pathToDilithiumJWK) // key from the JWK on the filesystem
-    // continue with the rest of IDentity Server configuration
+    // continue with the rest of Identity Server configuration
 ```
 
 #### Load a Dilithium key from byte array public/private key representations
@@ -97,7 +97,7 @@ byte[] privateKey = ...
 byte[] publicKey = ...
 builder.Services.AddIdentityServer()
     .AddDilithiumSigningCredential(new DilithiumSecurityKey("CRYDI3", publicKey, privateKey)) // key from the JWK
-    // continue with the rest of IDentity Server configuration
+    // continue with the rest of Identity Server configuration
 ```
 
 Once registered, the Identity Server will announce the public part of the Dilithium key in the JWKS document. Other non-post quantum keys are allowed to co-exist. Example:
@@ -125,6 +125,47 @@ Once registered, the Identity Server will announce the public part of the Dilith
 ```
 
 The JWT tokens issued by the Identity Server will contains the `"alg": "CRYDI3"` in the header; otherwise the token will be indistinguishable from the other tokens.
+
+#### Automatic key management
+
+The library can also manage its own Dilithium keys using Identity Server's [key management feature](https://docs.duendesoftware.com/identityserver/v5/fundamentals/keys/). 
+
+```csharp
+builder.Services.AddIdentityServer()
+    .AddDilithiumSupport() // automatically manage Dilithium keys
+    // continue with the rest of Identity Server configuration
+```
+
+This set up instructs the library to create `CRYDI3` keys, store them securely and rotate them according to the schedule configured in Identity Server. By default, the keys are automatically rotated every 90 days, announced 14 days in advance, and retained for 14 days after it expires.
+
+The normal customization of key management rules is still supported, and the library will respect those rules:
+
+```csharp
+builder.Services.AddIdentityServer(options =>
+    {
+        // new key every 14 days
+        options.KeyManagement.RotationInterval = TimeSpan.FromDays(14);
+        
+        // announce new key 3 days in advance in discovery
+        options.KeyManagement.PropagationTime = TimeSpan.FromDays(3);
+        
+        // keep old key for 3 days in discovery for validation of tokens
+        options.KeyManagement.RetentionDuration = TimeSpan.FromDays(3);
+    })
+    .AddDilithiumSupport() // automatically manage Dilithium keys
+    // continue with the rest of Identity Server configuration
+```
+
+By default, the library disallows any other keys than Dilithium, which means the built-in Identity Server behavior of generating RSA keys gets suppressed. It can be restored via the options. The same options can also be used to choose a different algorithm than `CRYDI3`:
+
+```csharp
+builder.Services.AddIdentityServer()
+    .AddDilithiumSupport(new DilithiumSupportOptions {
+        KeyManagementAlgorithm = "CRYDI5", // override the default "CRYDI3"
+        DisallowNonDilithiumKeys = false // allow RSA keys to co-exist
+     }) // automatically manage Dilithium keys
+    // continue with the rest of Identity Server configuration
+```
 
 ### Strathweb.Dilithium.AspNetCore
 
