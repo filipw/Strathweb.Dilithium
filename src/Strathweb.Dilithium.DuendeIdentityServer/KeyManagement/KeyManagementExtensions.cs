@@ -34,7 +34,7 @@ internal static class KeyManagementExtensions
         => opt.Name.StartsWith("E");
     
     internal static bool IsDilithiumKey(this SigningAlgorithmOptions opt)
-        => opt.Name.StartsWith("CRYDI");
+        => opt.Name.StartsWith("ML-DSA");
     
     internal static string GetCurveNameFromSigningAlgorithm(this SigningAlgorithmOptions opt)
         => opt.Name switch

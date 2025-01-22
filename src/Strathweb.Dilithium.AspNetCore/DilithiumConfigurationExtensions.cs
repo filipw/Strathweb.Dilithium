@@ -76,7 +76,7 @@ public static class DilithiumConfigurationExtensions
             var processedKeys = new List<SecurityKey>();
             foreach (var key in matchingKeys)
             {
-                if (key is JsonWebKey jsonWebKey && Enum.TryParse<MlweAlgorithm>(jsonWebKey.Alg, true, out var parsedAlg) && dilithiumTokenOptions.SupportedAlgorithms.Contains(parsedAlg))
+                if (key is JsonWebKey jsonWebKey && Enum.TryParse<AkpAlgorithm>(jsonWebKey.Alg.Replace("-",""), true, out var parsedAlg) && dilithiumTokenOptions.SupportedAlgorithms.Contains(parsedAlg))
                 {
                     processedKeys.Add(new DilithiumSecurityKey(jsonWebKey)
                     {

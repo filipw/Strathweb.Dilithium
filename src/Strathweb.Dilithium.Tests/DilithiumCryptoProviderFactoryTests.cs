@@ -11,7 +11,7 @@ public class DilithiumCryptoProviderFactoryTests
     {
         var testKey = new TestSecurityKey();
         var factory = new DilithiumCryptoProviderFactory();
-        Assert.False(factory.IsSupportedAlgorithm("CRYDI3", testKey));
+        Assert.False(factory.IsSupportedAlgorithm("ML-DSA-65", testKey));
     }
     
     [Fact]
@@ -24,7 +24,7 @@ public class DilithiumCryptoProviderFactoryTests
     [Fact]
     public void IsSupportedAlgorithm_ReturnsFalseForNonDilithiumAlgo2()
     {
-        var testKey = new DilithiumSecurityKey("CRYDI3");
+        var testKey = new DilithiumSecurityKey("ML-DSA-65");
         var factory = new DilithiumCryptoProviderFactory();
         Assert.False(factory.IsSupportedAlgorithm("Foo", testKey));
     }
@@ -34,7 +34,7 @@ public class DilithiumCryptoProviderFactoryTests
     {
         var testKey = new TestSecurityKey();
         var factory = new DilithiumCryptoProviderFactory();
-        Assert.Throws<NotSupportedException>(() => factory.CreateForSigning(testKey, "CRYDI3"));
+        Assert.Throws<NotSupportedException>(() => factory.CreateForSigning(testKey, "ML-DSA-65"));
     }
     
     [Fact]
@@ -42,31 +42,31 @@ public class DilithiumCryptoProviderFactoryTests
     {
         var testKey = new TestSecurityKey();
         var factory = new DilithiumCryptoProviderFactory();
-        Assert.Throws<NotSupportedException>(() => factory.CreateForVerifying(testKey, "CRYDI3"));
+        Assert.Throws<NotSupportedException>(() => factory.CreateForVerifying(testKey, "ML-DSA-65"));
     }
     
     [Fact]
     public void CreateForSigning_ReturnsDilithiumSignatureProvider()
     {
-        var testKey = new DilithiumSecurityKey("CRYDI3");
+        var testKey = new DilithiumSecurityKey("ML-DSA-65");
         var factory = new DilithiumCryptoProviderFactory();
-        var signatureProvider = factory.CreateForSigning(testKey, "CRYDI3");
+        var signatureProvider = factory.CreateForSigning(testKey, "ML-DSA-65");
         Assert.IsType<DilithiumSignatureProvider>(signatureProvider);
     }
     
     [Fact]
     public void CreateForVerifying_ReturnsDilithiumSignatureProvider()
     {
-        var testKey = new DilithiumSecurityKey("CRYDI3");
+        var testKey = new DilithiumSecurityKey("ML-DSA-65");
         var factory = new DilithiumCryptoProviderFactory();
-        var signatureProvider = factory.CreateForVerifying(testKey, "CRYDI3");
+        var signatureProvider = factory.CreateForVerifying(testKey, "ML-DSA-65");
         Assert.IsType<DilithiumSignatureProvider>(signatureProvider);
     }
 
     [Theory]
-    [InlineData("CRYDI2")]
-    [InlineData("CRYDI3")]
-    [InlineData("CRYDI5")]
+    [InlineData("ML-DSA-44")]
+    [InlineData("ML-DSA-65")]
+    [InlineData("ML-DSA-87")]
     public void SignAndVerify(string algorithm)
     {
         var content = Encoding.UTF8.GetBytes($"{TestTokenHeader}.{TestTokenPayload}");
@@ -79,9 +79,9 @@ public class DilithiumCryptoProviderFactoryTests
     }
     
     [Theory]
-    [InlineData("CRYDI2")]
-    [InlineData("CRYDI3")]
-    [InlineData("CRYDI5")]
+    [InlineData("ML-DSA-44")]
+    [InlineData("ML-DSA-65")]
+    [InlineData("ML-DSA-87")]
     public void CreateForVerifying_SigningThrows(string algorithm)
     {
         var content = Encoding.UTF8.GetBytes($"{TestTokenHeader}.{TestTokenPayload}");
@@ -91,9 +91,9 @@ public class DilithiumCryptoProviderFactoryTests
     }
 
     [Theory]
-    [InlineData("CRYDI2")]
-    [InlineData("CRYDI3")]
-    [InlineData("CRYDI5")]
+    [InlineData("ML-DSA-44")]
+    [InlineData("ML-DSA-65")]
+    [InlineData("ML-DSA-87")]
     public void SignAndVerify_RoundTripFromJWK(string algorithm)
     {
         var content = Encoding.UTF8.GetBytes($"{TestTokenHeader}.{TestTokenPayload}");
@@ -109,7 +109,7 @@ public class DilithiumCryptoProviderFactoryTests
 
     private const string TestTokenHeader = """
     {
-      "alg": "CRYDI3",
+      "alg": "ML-DSA-65",
       "typ": "at+jwt",
       "kid": "DA9348183FA12769546010E260082E98"
     }

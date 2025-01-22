@@ -12,12 +12,12 @@ public record DilithiumTokenOptions
 
     public SecurityKey[] FixedSecurityKeys { get; set; } = Array.Empty<SecurityKey>();
     
-    public MlweAlgorithm[] SupportedAlgorithms { get; set; } = new[] { MlweAlgorithm.CRYDI2, MlweAlgorithm.CRYDI3, MlweAlgorithm.CRYDI5 };
+    public AkpAlgorithm[] SupportedAlgorithms { get; set; } = new[] { AkpAlgorithm.MLDSA44, AkpAlgorithm.MLDSA65, AkpAlgorithm.MLDSA87 };
 }
 
-public enum MlweAlgorithm
+public enum AkpAlgorithm
 {
-    CRYDI2, 
-    CRYDI3,
-    CRYDI5
+    MLDSA44, 
+    MLDSA65,
+    MLDSA87
 }

@@ -13,7 +13,7 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     ContentRootPath = Directory.GetCurrentDirectory()
 });
 
-var key = new DilithiumSecurityKey("CRYDI3");
+var key = new DilithiumSecurityKey("ML-DSA-65");
 builder.Services.AddIdentityServer(opt => opt.EmitStaticAudienceClaim = true)
     .AddDilithiumSigningCredential(key) // new key per startup
     .AddInMemoryApiScopes(Config.ApiScopes)

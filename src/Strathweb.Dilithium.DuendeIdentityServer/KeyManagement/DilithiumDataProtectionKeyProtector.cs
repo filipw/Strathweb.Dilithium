@@ -58,7 +58,7 @@ public class DilithiumDataProtectionKeyProtector : ISigningKeyProtector
             return KeySerializer.Deserialize<EcKeyContainer>(data);
         }
         
-        if (key.Algorithm.StartsWith("CRYDI"))
+        if (key.Algorithm.StartsWith("ML-DSA"))
         {
             return KeySerializer.Deserialize<DilithiumKeyContainer>(data);
         }

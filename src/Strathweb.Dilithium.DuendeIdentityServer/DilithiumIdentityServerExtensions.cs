@@ -32,10 +32,10 @@ public static class DilithiumIdentityServerExtensions
                     "It is not possible to use both automatic key management and a static key. Choose one or the other.");
             }
             
-            if (dilithiumSupportOptions.KeyManagementAlgorithm != "CRYDI2" && dilithiumSupportOptions.KeyManagementAlgorithm != "CRYDI3" && dilithiumSupportOptions.KeyManagementAlgorithm != "CRYDI5")
+            if (dilithiumSupportOptions.KeyManagementAlgorithm != "ML-DSA-44" && dilithiumSupportOptions.KeyManagementAlgorithm != "ML-DSA-65" && dilithiumSupportOptions.KeyManagementAlgorithm != "ML-DSA-87")
             {
                 throw new NotSupportedException(
-                    $"Algorithm {dilithiumSupportOptions.KeyManagementAlgorithm} is not supported. Supported algorithms: CRYDI2, CRYDI3 and CRYDI5.");
+                    $"Algorithm {dilithiumSupportOptions.KeyManagementAlgorithm} is not supported. Supported algorithms: ML-DSA-44, ML-DSA-65 and ML-DSA-87.");
             }
             
             if (dilithiumSupportOptions.DisallowNonDilithiumKeys)

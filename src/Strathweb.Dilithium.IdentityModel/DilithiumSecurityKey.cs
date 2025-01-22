@@ -1,4 +1,6 @@
 using Microsoft.IdentityModel.Tokens;
+using Org.BouncyCastle.Crypto.Generators;
+using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Pqc.Crypto.Crystals.Dilithium;
 using Org.BouncyCastle.Security;
 
@@ -11,29 +13,29 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
     /// <summary>
     /// Create a new Dilithium key pair in memory and init public and private keys
     /// </summary>
-    /// <param name="algorithm">Supported algorithms: CRYDI2, CRYDI3 and CRYDI5</param>
+    /// <param name="algorithm">Supported algorithms: ML-DSA-44, ML-DSA-65 and ML-DSA-87</param>
     /// <exception cref="ArgumentNullException"></exception>
     public DilithiumSecurityKey(string algorithm)
     {
         if (algorithm == null) throw new ArgumentNullException(nameof(algorithm));
-        if (algorithm != "CRYDI2" && algorithm != "CRYDI3" && algorithm != "CRYDI5")
+        if (algorithm != "ML-DSA-44" && algorithm != "ML-DSA-65" && algorithm != "ML-DSA-87")
         {
             throw new NotSupportedException(
-                $"Algorithm {algorithm} is not supported. Supported algorithms: CRYDI2, CRYDI3 and CRYDI5.");
+                $"Algorithm {algorithm} is not supported. Supported algorithms: ML-DSA-44, ML-DSA-65 and ML-DSA-87.");
         }
 
         SupportedAlgorithm = algorithm;
 
         var dilithiumParameters = GetDilithiumParameters(algorithm);
         var random = new SecureRandom();
-        var keyGenParameters = new DilithiumKeyGenerationParameters(random, dilithiumParameters);
-        var dilithiumKeyPairGenerator = new DilithiumKeyPairGenerator();
+        var keyGenParameters = new MLDsaKeyGenerationParameters(random, dilithiumParameters);
+        var dilithiumKeyPairGenerator = new MLDsaKeyPairGenerator();
         dilithiumKeyPairGenerator.Init(keyGenParameters);
 
         var keyPair = dilithiumKeyPairGenerator.GenerateKeyPair();
 
-        PublicKey = (DilithiumPublicKeyParameters)keyPair.Public;
-        PrivateKey = (DilithiumPrivateKeyParameters)keyPair.Private;
+        PublicKey = (MLDsaPublicKeyParameters)keyPair.Public;
+        PrivateKey = (MLDsaPrivateKeyParameters)keyPair.Private;
         _keyId = BitConverter.ToString(SecureRandom.GetNextBytes(random, 16)).Replace("-", "");
         CryptoProviderFactory = new DilithiumCryptoProviderFactory();
     }
@@ -43,7 +45,7 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
     /// X property is mandatory and will be used to init public key.
     /// If the key contains D property, it will be used to init private key.
     /// </summary>
-    /// <param name="jsonWebKey">Supported algorithms: CRYDI2, CRYDI3 and CRYDI5</param>
+    /// <param name="jsonWebKey">Supported algorithms: ML-DSA-44, ML-DSA-65 and ML-DSA-87</param>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException"></exception>
     public DilithiumSecurityKey(JsonWebKey jsonWebKey)
@@ -51,21 +53,20 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
         if (jsonWebKey == null) throw new ArgumentNullException(nameof(jsonWebKey));
         if (jsonWebKey.X == null) throw new ArgumentException("X parameter (public key) is missing!");
         if (jsonWebKey.Alg == null) throw new ArgumentException("Alg parameter is missing!");
-        if (jsonWebKey.Alg != "CRYDI2" && jsonWebKey.Alg != "CRYDI3" && jsonWebKey.Alg != "CRYDI5")
+        if (jsonWebKey.Alg != "ML-DSA-44" && jsonWebKey.Alg != "ML-DSA-65" && jsonWebKey.Alg != "ML-DSA-87")
         {
             throw new NotSupportedException(
-                $"Algorithm {jsonWebKey.Alg} is not supported. Supported algorithms: CRYDI2, CRYDI3 and CRYDI5.");
+                $"Algorithm {jsonWebKey.Alg} is not supported. Supported algorithms: ML-DSA-44, ML-DSA-65 and ML-DSA-87.");
         }
 
         SupportedAlgorithm = jsonWebKey.Alg;
 
         var dilithiumParameters = GetDilithiumParameters(jsonWebKey.Alg);
-        PublicKey = new DilithiumPublicKeyParameters(dilithiumParameters, Base64UrlEncoder.DecodeBytes(jsonWebKey.X));
+        PublicKey = MLDsaPublicKeyParameters.FromEncoding(dilithiumParameters, Base64UrlEncoder.DecodeBytes(jsonWebKey.X));
 
         if (jsonWebKey.D != null)
         {
-            PrivateKey =
-                GetPrivateKeyParametersFromEncodedKey(dilithiumParameters, Base64UrlEncoder.DecodeBytes(jsonWebKey.D));
+            PrivateKey = MLDsaPrivateKeyParameters.FromEncoding(dilithiumParameters, Base64UrlEncoder.DecodeBytes(jsonWebKey.D));
         }
 
         _keyId = jsonWebKey.KeyId;
@@ -76,7 +77,7 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
     /// <summary>
     /// Load a key from byte representation of public and an optional private key.
     /// </summary>
-    /// <param name="algorithm">Supported algorithms: CRYDI2, CRYDI3 and CRYDI5</param>
+    /// <param name="algorithm">Supported algorithms: ML-DSA-44, ML-DSA-65 and ML-DSA-87</param>
     /// <param name="keyId"></param>
     /// <param name="publicKey">Byte encoded Dilithium public key.</param>
     /// <param name="privateKey">Byte encoded Dilithium private key (optional).</param>
@@ -87,29 +88,29 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
         if (algorithm == null) throw new ArgumentNullException(nameof(algorithm));
         if (keyId == null) throw new ArgumentNullException(nameof(keyId));
         if (publicKey == null) throw new ArgumentNullException(nameof(publicKey));
-        if (algorithm != "CRYDI2" && algorithm != "CRYDI3" && algorithm != "CRYDI5")
+        if (algorithm != "ML-DSA-44" && algorithm != "ML-DSA-65" && algorithm != "ML-DSA-87")
         {
             throw new NotSupportedException(
-                $"Algorithm {algorithm} is not supported. Supported algorithms: CRYDI2, CRYDI3 and CRYDI5.");
+                $"Algorithm {algorithm} is not supported. Supported algorithms: ML-DSA-44, ML-DSA-65 and ML-DSA-87.");
         }
 
         SupportedAlgorithm = algorithm;
 
         var dilithiumParameters = GetDilithiumParameters(algorithm);
-        PublicKey = new DilithiumPublicKeyParameters(dilithiumParameters, publicKey);
+        PublicKey = MLDsaPublicKeyParameters.FromEncoding(dilithiumParameters, publicKey);
 
         if (privateKey != null)
         {
-            PrivateKey = GetPrivateKeyParametersFromEncodedKey(dilithiumParameters, privateKey);
+            PrivateKey = MLDsaPrivateKeyParameters.FromEncoding(dilithiumParameters, privateKey);
         }
 
         _keyId = keyId;
         CryptoProviderFactory = new DilithiumCryptoProviderFactory();
     }
 
-    public DilithiumPublicKeyParameters PublicKey { get; set; }
+    public MLDsaPublicKeyParameters PublicKey { get; set; }
 
-    public DilithiumPrivateKeyParameters? PrivateKey { get; set; }
+    public MLDsaPrivateKeyParameters? PrivateKey { get; set; }
 
     public override int KeySize { get; }
 
@@ -119,11 +120,11 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
 
     public override bool IsSupportedAlgorithm(string algorithm) => SupportedAlgorithm == algorithm;
 
-    private DilithiumParameters GetDilithiumParameters(string algorithm)
+    private MLDsaParameters GetDilithiumParameters(string algorithm)
     {
-        if (algorithm == "CRYDI2") return DilithiumParameters.Dilithium2;
-        if (algorithm == "CRYDI3") return DilithiumParameters.Dilithium3;
-        if (algorithm == "CRYDI5") return DilithiumParameters.Dilithium5;
+        if (algorithm == "ML-DSA-44") return MLDsaParameters.ml_dsa_44;
+        if (algorithm == "ML-DSA-65") return MLDsaParameters.ml_dsa_65;
+        if (algorithm == "ML-DSA-87") return MLDsaParameters.ml_dsa_87;
 
         throw new NotSupportedException($"Unsupported algorithm type: '{algorithm}'");
     }
@@ -138,7 +139,7 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
     {
         var jsonWebKey = new JsonWebKey
         {
-            Kty = "MLWE",
+            Kty = "AKP",
             Kid = KeyId,
             X = Base64UrlEncoder.Encode(PublicKey.GetEncoded()),
             Alg = SupportedAlgorithm,
@@ -151,75 +152,5 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
         }
 
         return jsonWebKey;
-    }
-
-    // based on https://github.com/bcgit/bc-csharp/blob/release-2.4.0/crypto/src/pqc/crypto/crystals/dilithium/DilithiumPrivateKeyParameters.cs
-    private DilithiumPrivateKeyParameters GetPrivateKeyParametersFromEncodedKey(DilithiumParameters dilithiumParameters,
-        byte[] encodedPrivateKey)
-    {
-        const int SeedBytes = 32;
-        const int TrBytes = 64;
-        //const int PolyT1PackedBytes = 320; // not used here but listed for completeness
-        const int PolyT0PackedBytes = 416;
-
-        int K, L, PolyEtaPackedBytes;
-
-        // Set parameters based on the Dilithium mode
-        if (dilithiumParameters == DilithiumParameters.Dilithium2)
-        {
-            K = 4;
-            L = 4;
-            PolyEtaPackedBytes = 96;
-        }
-        else if (dilithiumParameters == DilithiumParameters.Dilithium3)
-        {
-            K = 6;
-            L = 5;
-            PolyEtaPackedBytes = 128;
-        }
-        else if (dilithiumParameters == DilithiumParameters.Dilithium5)
-        {
-            K = 8;
-            L = 7;
-            PolyEtaPackedBytes = 96;
-        }
-        else
-        {
-            throw new NotSupportedException("Unsupported mode");
-        }
-
-        // calculate the lengths based on the parameters
-        var s1Length = L * PolyEtaPackedBytes;
-        var s2Length = K * PolyEtaPackedBytes;
-        var t0Length = K * PolyT0PackedBytes;
-
-        var rho = new byte[SeedBytes];
-        var k = new byte[SeedBytes];
-        var tr = new byte[TrBytes];
-        var s1 = new byte[s1Length];
-        var s2 = new byte[s2Length];
-        var t0 = new byte[t0Length];
-
-        // copy the respective parts of the encoded private key
-        var offset = 0;
-        Array.Copy(encodedPrivateKey, offset, rho, 0, SeedBytes);
-        offset += SeedBytes;
-        Array.Copy(encodedPrivateKey, offset, k, 0, SeedBytes);
-        offset += SeedBytes;
-        Array.Copy(encodedPrivateKey, offset, tr, 0, TrBytes);
-        offset += TrBytes;
-        Array.Copy(encodedPrivateKey, offset, s1, 0, s1Length);
-        offset += s1Length;
-        Array.Copy(encodedPrivateKey, offset, s2, 0, s2Length);
-        offset += s2Length;
-        Array.Copy(encodedPrivateKey, offset, t0, 0, t0Length);
-        offset += t0Length;
-
-        // handle t1 with the remaining bytes
-        var remainingLength = encodedPrivateKey.Length - offset;
-        var t1 = new byte[remainingLength];
-        Array.Copy(encodedPrivateKey, offset, t1, 0, remainingLength);
-
-        return new DilithiumPrivateKeyParameters(dilithiumParameters, rho, k, tr, s1, s2, t0, t1);
     }
 }
