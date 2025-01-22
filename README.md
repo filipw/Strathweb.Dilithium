@@ -1,10 +1,12 @@
 # Strathweb.Dilithium
 
-This repo contains a set of libraries facilitating and streamlining the integration of [Crystals-Dilithium](https://pq-crystals.org/dilithium/) signature scheme (a Post-Quantum Cryptography suite) into ASP.NET Core projects - both for the purposes of token signing and their validation.
+This repo contains a set of libraries facilitating and streamlining the integration of [Module-Lattice-Based Digital Signature Standard](https://csrc.nist.gov/pubs/fips/204/final) signature scheme (a FIPS 204 Post-Quantum Cryptography suite, based on [Crystals-Dilithium](https://pq-crystals.org/dilithium/)) into ASP.NET Core projects - both for the purposes of token signing and their validation.
 
-The algorithm implementations come from the excellent [BouncyCastle](https://www.bouncycastle.org/csharp/) and supports Dilithium2, Dilithium3 and Dilithium5 parameter sets.
+The algorithm implementations come from the excellent [BouncyCastle](https://www.bouncycastle.org/csharp/) and supports ML-DSA-44, ML-DSA-65 and ML-DSA-87 parameter sets.
 
-The libraries are intended to be used as the ASP.NET Core implementation of [JOSE and COSE Encoding for Dilithium](https://datatracker.ietf.org/doc/html/draft-ietf-cose-dilithium-01) IETF draft.
+The libraries are intended to be used as the ASP.NET Core implementation of [ML-DSA for JOSE and COSE](https://datatracker.ietf.org/doc/draft-ietf-cose-dilithium/) IETF draft.
+
+The naming of the types intentionally refers to "Dilithium" (the original name before standardization), because it is cool 😎 
 
 ## Available packages
 
