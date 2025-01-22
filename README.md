@@ -18,10 +18,10 @@ This is the base package on top of which other features can be built. Contains i
  - `DilithiumSignatureProvider`, which implements `SignatureProvider` abstract class
  - `DilithiumCryptoProviderFactory`, which extends the default `CryptoProviderFactory`
 
-A new instance of a Dilithium public-private pair can be created by using the main constructor that takes in the algorithm (`CRYDI2`, `CRYDI3` or `CRYDI5`) identifier.
+A new instance of a Dilithium public-private pair can be created by using the main constructor that takes in the algorithm (`ML-DSA-44`, `ML-DSA-65` or `ML-DSA-87`) identifier.
 
 ```csharp
-var securityKey = new DilithiumSecurityKey("CRYDI3");
+var securityKey = new DilithiumSecurityKey("ML-DSA-65");
 ```
 
 The encoded private and public keys can then be read using the relevant properties:
@@ -34,7 +34,7 @@ byte[] privateKey = securityKey.PrivateKey;
 They can also be exported out of process (e.g. using base64url encoding) and later used to re-initialize the key:
 
 ```csharp
-var securityKey = new DilithiumSecurityKey("CRYDI3", publicKey, privateKey);
+var securityKey = new DilithiumSecurityKey("ML-DSA-65", publicKey, privateKey);
 ```
 
 The private key is optional - in which case the key can still be used for signature validation but not longer for signing. 
@@ -67,7 +67,7 @@ This pair will be discarded upon application shutdown.
 
 ```csharp
 builder.Services.AddIdentityServer()
-    .AddDilithiumSigningCredential(new DilithiumSecurityKey("CRYDI3")) // new key per startup
+    .AddDilithiumSigningCredential(new DilithiumSecurityKey("ML-DSA-65")) // new key per startup
 ```
 
 #### Load a Dilithium key from a JSON Web Key format
@@ -96,7 +96,7 @@ builder.Services.AddIdentityServer()
 byte[] privateKey = ...
 byte[] publicKey = ...
 builder.Services.AddIdentityServer()
-    .AddDilithiumSigningCredential(new DilithiumSecurityKey("CRYDI3", publicKey, privateKey)) // key from the JWK
+    .AddDilithiumSigningCredential(new DilithiumSecurityKey("ML-DSA-65", publicKey, privateKey)) // key from the JWK
     // continue with the rest of Identity Server configuration
 ```
 
@@ -114,17 +114,17 @@ Once registered, the Identity Server will announce the public part of the Dilith
             "alg": "RS256"
         },
         {
-            "kty": "MLWE",
+            "kty": "AKP",
             "use": "sig",
             "kid": "A574....",
-            "alg": "CRYDI3",
+            "alg": "ML-DSA-65",
             "x": "OMjMS...."
         }
     ]
 }
 ```
 
-The JWT tokens issued by the Identity Server will contains the `"alg": "CRYDI3"` in the header; otherwise the token will be indistinguishable from the other tokens.
+The JWT tokens issued by the Identity Server will contains the `"alg": "ML-DSA-65"` in the header; otherwise the token will be indistinguishable from the other tokens.
 
 #### Automatic key management
 
@@ -136,7 +136,7 @@ builder.Services.AddIdentityServer()
     // continue with the rest of Identity Server configuration
 ```
 
-This set up instructs the library to create `CRYDI3` keys, store them securely and rotate them according to the schedule configured in Identity Server. By default, the keys are automatically rotated every 90 days, announced 14 days in advance, and retained for 14 days after it expires.
+This set up instructs the library to create `ML-DSA-65` keys, store them securely and rotate them according to the schedule configured in Identity Server. By default, the keys are automatically rotated every 90 days, announced 14 days in advance, and retained for 14 days after it expires.
 
 The normal customization of key management rules is still supported, and the library will respect those rules:
 
@@ -156,12 +156,12 @@ builder.Services.AddIdentityServer(options =>
     // continue with the rest of Identity Server configuration
 ```
 
-By default, the library disallows any other keys than Dilithium, which means the built-in Identity Server behavior of generating RSA keys gets suppressed. It can be restored via the options. The same options can also be used to choose a different algorithm than `CRYDI3`:
+By default, the library disallows any other keys than Dilithium, which means the built-in Identity Server behavior of generating RSA keys gets suppressed. It can be restored via the options. The same options can also be used to choose a different algorithm than `ML-DSA-65`:
 
 ```csharp
 builder.Services.AddIdentityServer()
     .AddDilithiumSupport(new DilithiumSupportOptions {
-        KeyManagementAlgorithm = "CRYDI5", // override the default "CRYDI3"
+        KeyManagementAlgorithm = "ML-DSA-87", // override the default "ML-DSA-65"
         DisallowNonDilithiumKeys = false // allow RSA keys to co-exist
      }) // automatically manage Dilithium keys
     // continue with the rest of Identity Server configuration
