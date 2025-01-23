@@ -12,40 +12,40 @@ using JsonWebKey = Microsoft.IdentityModel.Tokens.JsonWebKey;
 
 namespace Strathweb.Dilithium.DuendeIdentityServer;
 
-public static class DilithiumIdentityServerExtensions
+public static class MlDsaIdentityServerExtensions
 {
-    public static IIdentityServerBuilder AddDilithiumSupport(this IIdentityServerBuilder builder)
+    public static IIdentityServerBuilder AddMlDsaSupport(this IIdentityServerBuilder builder)
     {
-        return builder.AddDilithiumSupport(new DilithiumSupportOptions());
+        return builder.AddMlDsaSupport(new MlDsaSupportOptions());
     }
     
-    public static IIdentityServerBuilder AddDilithiumSupport(this IIdentityServerBuilder builder, DilithiumSupportOptions dilithiumSupportOptions)
+    public static IIdentityServerBuilder AddMlDsaSupport(this IIdentityServerBuilder builder, MlDsaSupportOptions mlDsaSupportOptions)
     {
         if (builder == null) throw new ArgumentNullException(nameof(builder));
-        if (dilithiumSupportOptions == null) throw new ArgumentNullException(nameof(dilithiumSupportOptions));
+        if (mlDsaSupportOptions == null) throw new ArgumentNullException(nameof(mlDsaSupportOptions));
         
-        if (dilithiumSupportOptions.EnableKeyManagement)
+        if (mlDsaSupportOptions.EnableKeyManagement)
         {
-            if (dilithiumSupportOptions.StaticKey != null)
+            if (mlDsaSupportOptions.StaticKey != null)
             {
                 throw new ArgumentException(
                     "It is not possible to use both automatic key management and a static key. Choose one or the other.");
             }
             
-            if (dilithiumSupportOptions.KeyManagementAlgorithm != "CRYDI2" && dilithiumSupportOptions.KeyManagementAlgorithm != "CRYDI3" && dilithiumSupportOptions.KeyManagementAlgorithm != "CRYDI5")
+            if (mlDsaSupportOptions.KeyManagementAlgorithm != "ML-DSA-44" && mlDsaSupportOptions.KeyManagementAlgorithm != "ML-DSA-65" && mlDsaSupportOptions.KeyManagementAlgorithm != "ML-DSA-87")
             {
                 throw new NotSupportedException(
-                    $"Algorithm {dilithiumSupportOptions.KeyManagementAlgorithm} is not supported. Supported algorithms: CRYDI2, CRYDI3 and CRYDI5.");
+                    $"Algorithm {mlDsaSupportOptions.KeyManagementAlgorithm} is not supported. Supported algorithms: ML-DSA-44, ML-DSA-65 and ML-DSA-87.");
             }
             
-            if (dilithiumSupportOptions.DisallowNonDilithiumKeys)
+            if (mlDsaSupportOptions.DisallowNonMlDsaKeys)
             {
                 builder.Services.Configure((IdentityServerOptions identityServerOptions) =>
                 {
                     identityServerOptions.KeyManagement.Enabled = true;
                     identityServerOptions.KeyManagement.SigningAlgorithms = new[]
                     {
-                        new SigningAlgorithmOptions(dilithiumSupportOptions.KeyManagementAlgorithm)
+                        new SigningAlgorithmOptions(mlDsaSupportOptions.KeyManagementAlgorithm)
                     };
                 });
             }
@@ -56,23 +56,23 @@ public static class DilithiumIdentityServerExtensions
                     identityServerOptions.KeyManagement.Enabled = true;
                     var configuredAlgorithms = identityServerOptions.KeyManagement.SigningAlgorithms.ToList();
                     configuredAlgorithms.Add(
-                        new SigningAlgorithmOptions(dilithiumSupportOptions.KeyManagementAlgorithm));
+                        new SigningAlgorithmOptions(mlDsaSupportOptions.KeyManagementAlgorithm));
                     identityServerOptions.KeyManagement.SigningAlgorithms = configuredAlgorithms;
                 });
             }
-            builder.Services.AddTransient<IKeyManager, DilithiumKeyManager>();
-            builder.Services.AddTransient<ISigningKeyProtector, DilithiumDataProtectionKeyProtector>();
-            builder.Services.AddTransient<IDiscoveryResponseGenerator, DilithiumAwareDiscoveryResponseGenerator>();
+            builder.Services.AddTransient<IKeyManager, MlDsaKeyManager>();
+            builder.Services.AddTransient<ISigningKeyProtector, MlDsaDataProtectionKeyProtector>();
+            builder.Services.AddTransient<IDiscoveryResponseGenerator, MlDsaAwareDiscoveryResponseGenerator>();
         } 
-        else if (dilithiumSupportOptions.StaticKey is { } fixedKey)
+        else if (mlDsaSupportOptions.StaticKey is { } fixedKey)
         {
-            builder.AddDilithiumSigningCredential(fixedKey);
+            builder.AddMlDsaSigningCredential(fixedKey);
         }
 
         return builder;
     }
     
-    public static IIdentityServerBuilder AddDilithiumSigningCredential(this IIdentityServerBuilder builder, DilithiumSecurityKey securityKey)
+    public static IIdentityServerBuilder AddMlDsaSigningCredential(this IIdentityServerBuilder builder, MlDsaSecurityKey securityKey)
     {
         var credential = new SigningCredentials(securityKey, securityKey.SupportedAlgorithm);
         builder.Services.AddSingleton<ISigningCredentialStore>(new InMemorySigningCredentialsStore(credential));
@@ -87,7 +87,7 @@ public static class DilithiumIdentityServerExtensions
         return builder;
     }
     
-    public static IIdentityServerBuilder AddDilithiumSigningCredential(this IIdentityServerBuilder builder, string jwkPath)
+    public static IIdentityServerBuilder AddMlDsaSigningCredential(this IIdentityServerBuilder builder, string jwkPath)
     {
         if (jwkPath == null) throw new ArgumentNullException(nameof(jwkPath));
 
@@ -108,6 +108,6 @@ public static class DilithiumIdentityServerExtensions
             throw new Exception($"Could not deserialize JWK from '{jwkPath}'");
         }
 
-        return builder.AddDilithiumSigningCredential(new DilithiumSecurityKey(jwk));
+        return builder.AddMlDsaSigningCredential(new MlDsaSecurityKey(jwk));
     }
 }

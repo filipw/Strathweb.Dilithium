@@ -13,9 +13,9 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     ContentRootPath = Directory.GetCurrentDirectory()
 });
 
-var key = new DilithiumSecurityKey("CRYDI3");
+var key = new MlDsaSecurityKey("ML-DSA-65");
 builder.Services.AddIdentityServer(opt => opt.EmitStaticAudienceClaim = true)
-    .AddDilithiumSigningCredential(key) // new key per startup
+    .AddMlDsaSigningCredential(key) // new key per startup
     .AddInMemoryApiScopes(Config.ApiScopes)
     .AddInMemoryApiResources(Config.ApiResources)
     .AddInMemoryClients(Config.Clients);
@@ -24,7 +24,7 @@ builder.Services.AddAuthentication().AddJwtBearer(opt =>
 {
     opt.Audience = "https://localhost:7104";
     opt.Configuration = new OpenIdConnectConfiguration { Issuer = "http://localhost/idp"};
-    opt.ConfigureDilithiumTokenSupport(c =>
+    opt.ConfigureMlDsaTokenSupport(c =>
     {
         c.FixedSecurityKeys = new SecurityKey[] { key };
     });

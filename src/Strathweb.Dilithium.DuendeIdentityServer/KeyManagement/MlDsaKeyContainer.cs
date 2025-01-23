@@ -4,19 +4,19 @@ using Strathweb.Dilithium.IdentityModel;
 
 namespace Strathweb.Dilithium.DuendeIdentityServer.KeyManagement;
 
-public class DilithiumKeyContainer : KeyContainer
+public class MlDsaKeyContainer : KeyContainer
 {
     /// <summary>
-    /// Constructor for DilithiumKeyContainer.
+    /// Constructor for MlDsaKeyContainer.
     /// </summary>
-    public DilithiumKeyContainer() : base()
+    public MlDsaKeyContainer() : base()
     {
     }
 
     /// <summary>
-    /// Constructor for DilithiumKeyContainer.
+    /// Constructor for MlDsaKeyContainer.
     /// </summary>
-    public DilithiumKeyContainer(DilithiumSecurityKey key, string algorithm, DateTime created)
+    public MlDsaKeyContainer(MlDsaSecurityKey key, string algorithm, DateTime created)
         : base(key.KeyId, algorithm, created)
     {
         D = key.PrivateKey.GetEncoded();
@@ -36,6 +36,6 @@ public class DilithiumKeyContainer : KeyContainer
     /// <inheritdoc/>
     public override AsymmetricSecurityKey ToSecurityKey()
     {
-        return new DilithiumSecurityKey(Algorithm, Id, X, D);
+        return new MlDsaSecurityKey(Algorithm, Id, X, D);
     }
 }

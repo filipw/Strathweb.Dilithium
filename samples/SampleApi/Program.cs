@@ -7,7 +7,7 @@ builder.Services.AddAuthentication().AddJwtBearer(opt =>
 {
     opt.Authority = "https://localhost:5001";
     opt.Audience = "https://localhost:7104";
-    opt.ConfigureDilithiumTokenSupport();
+    opt.ConfigureMlDsaTokenSupport();
 });
 
 builder.Services.AddAuthorization(options =>

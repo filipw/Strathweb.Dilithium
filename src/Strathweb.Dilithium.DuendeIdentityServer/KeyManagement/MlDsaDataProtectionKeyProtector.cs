@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.DataProtection;
 
 namespace Strathweb.Dilithium.DuendeIdentityServer.KeyManagement;
 
-public class DilithiumDataProtectionKeyProtector : ISigningKeyProtector
+public class MlDsaDataProtectionKeyProtector : ISigningKeyProtector
 {
     private readonly IDataProtector _dataProtectionProvider;
     private readonly KeyManagementOptions _options;
 
-    public DilithiumDataProtectionKeyProtector(KeyManagementOptions options, IDataProtectionProvider dataProtectionProvider)
+    public MlDsaDataProtectionKeyProtector(KeyManagementOptions options, IDataProtectionProvider dataProtectionProvider)
     {
         _options = options;
         _dataProtectionProvider = dataProtectionProvider.CreateProtector(nameof(DataProtectionKeyProtector));
@@ -58,9 +58,9 @@ public class DilithiumDataProtectionKeyProtector : ISigningKeyProtector
             return KeySerializer.Deserialize<EcKeyContainer>(data);
         }
         
-        if (key.Algorithm.StartsWith("CRYDI"))
+        if (key.Algorithm.StartsWith("ML-DSA"))
         {
-            return KeySerializer.Deserialize<DilithiumKeyContainer>(data);
+            return KeySerializer.Deserialize<MlDsaKeyContainer>(data);
         }
 
         throw new Exception($"Invalid Algorithm: {key.Algorithm} for kid: {key.Id}");

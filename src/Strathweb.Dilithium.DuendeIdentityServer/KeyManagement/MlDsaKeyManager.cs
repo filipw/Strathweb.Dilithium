@@ -17,7 +17,7 @@ namespace Strathweb.Dilithium.DuendeIdentityServer.KeyManagement;
 /// <summary>
 /// Implementation of IKeyManager that creates, stores, and rotates signing keys.
 /// </summary>
-public class DilithiumKeyManager : IKeyManager
+public class MlDsaKeyManager : IKeyManager
 {
     private readonly IdentityServerOptions _options;
     private readonly ISigningKeyStore _store;
@@ -39,7 +39,7 @@ public class DilithiumKeyManager : IKeyManager
     /// <param name="newKeyLock"></param>
     /// <param name="logger"></param>
     /// <param name="issuerNameService"></param>
-    public DilithiumKeyManager(
+    public MlDsaKeyManager(
         IdentityServerOptions options,
         ISigningKeyStore store,
         ISigningKeyStoreCache cache,
@@ -280,10 +280,10 @@ public class DilithiumKeyManager : IKeyManager
             container = //_options.KeyManagement.WrapKeysInX509Certificate ? //new X509KeyContainer(ec, alg, now, _options.KeyManagement.KeyRetirementAge, iss) :
                 (KeyContainer) new EcKeyContainer(ec, alg.Name, now);
         }
-        else if (alg.IsDilithiumKey())
+        else if (alg.IsMlDsaKey())
         {
-            var dilithium = new DilithiumSecurityKey(alg.Name);
-            container = new DilithiumKeyContainer(dilithium, alg.Name, now);
+            var mlDsaSecurityKey = new MlDsaSecurityKey(alg.Name);
+            container = new MlDsaKeyContainer(mlDsaSecurityKey, alg.Name, now);
         }
         else
         {

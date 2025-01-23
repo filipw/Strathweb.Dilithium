@@ -9,20 +9,20 @@ using Strathweb.Dilithium.IdentityModel;
 
 namespace Strathweb.Dilithium.DuendeIdentityServer.KeyManagement;
 
-public class DilithiumAwareDiscoveryResponseGenerator : DiscoveryResponseGenerator
+public class MlDsaAwareDiscoveryResponseGenerator : DiscoveryResponseGenerator
 {
-    public DilithiumAwareDiscoveryResponseGenerator(IdentityServerOptions options, IResourceStore resourceStore, IKeyMaterialService keys, ExtensionGrantValidator extensionGrants, ISecretsListParser secretParsers, IResourceOwnerPasswordValidator resourceOwnerValidator, ILogger<DiscoveryResponseGenerator> logger) : base(options, resourceStore, keys, extensionGrants, secretParsers, resourceOwnerValidator, logger)
+    public MlDsaAwareDiscoveryResponseGenerator(IdentityServerOptions options, IResourceStore resourceStore, IKeyMaterialService keys, ExtensionGrantValidator extensionGrants, ISecretsListParser secretParsers, IResourceOwnerPasswordValidator resourceOwnerValidator, ILogger<DiscoveryResponseGenerator> logger) : base(options, resourceStore, keys, extensionGrants, secretParsers, resourceOwnerValidator, logger)
     {
     }
 
     public override async Task<IEnumerable<JsonWebKey>> CreateJwkDocumentAsync()
     {
         var publishedKeys = (await base.CreateJwkDocumentAsync()).ToList();
-        var dilithiumKeys = (await Keys.GetValidationKeysAsync()).Where(key => key.Key is DilithiumSecurityKey);
+        var mlDsaKeys = (await Keys.GetValidationKeysAsync()).Where(key => key.Key is MlDsaSecurityKey);
 
-        foreach (var dilithiumKey in dilithiumKeys)
+        foreach (var mlDsaKey in mlDsaKeys)
         {
-            var jsonWebKey = (dilithiumKey.Key as DilithiumSecurityKey)?.ToJsonWebKey(includePrivateKey: false);
+            var jsonWebKey = (mlDsaKey.Key as MlDsaSecurityKey)?.ToJsonWebKey(includePrivateKey: false);
             var webKey = new JsonWebKey
             {
                 kty = jsonWebKey.Kty,

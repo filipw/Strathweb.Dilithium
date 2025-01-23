@@ -1,10 +1,12 @@
 # Strathweb.Dilithium
 
-This repo contains a set of libraries facilitating and streamlining the integration of [Crystals-Dilithium](https://pq-crystals.org/dilithium/) signature scheme (a Post-Quantum Cryptography suite) into ASP.NET Core projects - both for the purposes of token signing and their validation.
+This repo contains a set of libraries facilitating and streamlining the integration of [Module-Lattice-Based Digital Signature Standard](https://csrc.nist.gov/pubs/fips/204/final) signature scheme (a FIPS 204 Post-Quantum Cryptography suite, based on [Crystals-Dilithium](https://pq-crystals.org/dilithium/)) into ASP.NET Core projects - both for the purposes of token signing and their validation.
 
-The algorithm implementations come from the excellent [BouncyCastle](https://www.bouncycastle.org/csharp/) and supports Dilithium2, Dilithium3 and Dilithium5 parameter sets.
+The algorithm implementations come from the excellent [BouncyCastle](https://www.bouncycastle.org/csharp/) and supports ML-DSA-44, ML-DSA-65 and ML-DSA-87 parameter sets.
 
-The libraries are intended to be used as the ASP.NET Core implementation of [JOSE and COSE Encoding for Dilithium](https://datatracker.ietf.org/doc/html/draft-ietf-cose-dilithium-01) IETF draft.
+The libraries are intended to be used as the ASP.NET Core implementation of [ML-DSA for JOSE and COSE](https://datatracker.ietf.org/doc/draft-ietf-cose-dilithium/) IETF draft.
+
+While the type names all follow the ML-DSA convention, the naming of the library intentionally still refers to "Dilithium" (the original name before standardization), because it is cool 😎 
 
 ## Available packages
 
@@ -12,16 +14,16 @@ The libraries are intended to be used as the ASP.NET Core implementation of [JOS
 
 [![NuGet](https://img.shields.io/nuget/v/Strathweb.Dilithium.IdentityModel.svg)](https://www.nuget.org/packages/Strathweb.Dilithium.IdentityModel/)
 
-This is the base package on top of which other features can be built. Contains integration of Dilithium into the ecosystem of [Microsoft.IdentityModel.Tokens](https://www.nuget.org/packages/Microsoft.IdentityModel.Tokens). Those are:
+This is the base package on top of which other features can be built. Contains integration of ML-DSA into the ecosystem of [Microsoft.IdentityModel.Tokens](https://www.nuget.org/packages/Microsoft.IdentityModel.Tokens). Those are:
 
- - `DilithiumSecurityKey`, which implements `AsymmetricSecurityKey` abstract class
- - `DilithiumSignatureProvider`, which implements `SignatureProvider` abstract class
- - `DilithiumCryptoProviderFactory`, which extends the default `CryptoProviderFactory`
+ - `MlDsaSecurityKey`, which implements `AsymmetricSecurityKey` abstract class
+ - `MlDsaSignatureProvider`, which implements `SignatureProvider` abstract class
+ - `MlDsaCryptoProviderFactory`, which extends the default `CryptoProviderFactory`
 
-A new instance of a Dilithium public-private pair can be created by using the main constructor that takes in the algorithm (`CRYDI2`, `CRYDI3` or `CRYDI5`) identifier.
+A new instance of a ML-DSA public-private pair can be created by using the main constructor that takes in the algorithm (`ML-DSA-44`, `ML-DSA-65` or `ML-DSA-87`) identifier.
 
 ```csharp
-var securityKey = new DilithiumSecurityKey("CRYDI3");
+var securityKey = new MlDsaSecurityKey("ML-DSA-65");
 ```
 
 The encoded private and public keys can then be read using the relevant properties:
@@ -34,7 +36,7 @@ byte[] privateKey = securityKey.PrivateKey;
 They can also be exported out of process (e.g. using base64url encoding) and later used to re-initialize the key:
 
 ```csharp
-var securityKey = new DilithiumSecurityKey("CRYDI3", publicKey, privateKey);
+var securityKey = new MlDsaSecurityKey("ML-DSA-65", publicKey, privateKey);
 ```
 
 The private key is optional - in which case the key can still be used for signature validation but not longer for signing. 
@@ -48,16 +50,16 @@ JsonWebKey jwk = securityKey.ToJsonWebKey(includePrivateKey: true);
 Such a JWK can be serialized, persisted or published, and later re-imported:
 
 ```csharp
-var securityKey = new DilithiumSecurityKey(jwk);
+var securityKey = new MlDsaSecurityKey(jwk);
 ```
 
-Depending on whether the JWK was exported with the private key or not, the instance of `DilithiumSecurityKey` will be suitable for signing or only for validation of signatures.
+Depending on whether the JWK was exported with the private key or not, the instance of `MlDsaSecurityKey` will be suitable for signing or only for validation of signatures.
 
 ### Strathweb.Dilithium.DuendeIdentityServer
 
 [![NuGet](https://img.shields.io/nuget/v/Strathweb.Dilithium.DuendeIdentityServer.svg)](https://www.nuget.org/packages/Strathweb.Dilithium.DuendeIdentityServer/)
 
-Add-on to [Duende IdentityServer](https://duendesoftware.com/products/identityserver), which allows for registering a `DilithiumSecurityKey` as valid token signing credential. Once configured, the Dilithium key can be used for token signing for API resources that are flagged as compatible with the Dilithium algorithms. The public key is also going to get announced with the JWKS document.
+Add-on to [Duende IdentityServer](https://duendesoftware.com/products/identityserver), which allows for registering a `MlDsaSecurityKey` as valid token signing credential. Once configured, the ML-DSA key can be used for token signing for API resources that are flagged as compatible with the ML-DSA algorithms. The public key is also going to get announced with the JWKS document.
 
 Example usage:
 
@@ -67,17 +69,17 @@ This pair will be discarded upon application shutdown.
 
 ```csharp
 builder.Services.AddIdentityServer()
-    .AddDilithiumSigningCredential(new DilithiumSecurityKey("CRYDI3")) // new key per startup
+    .AddMlDsaSigningCredential(new MlDsaSecurityKey("ML-DSA-65")) // new key per startup
 ```
 
-#### Load a Dilithium key from a JSON Web Key format
+#### Load an ML-DSA key from a JSON Web Key format
 
-It is possible to manually load JWK (`Microsoft.IdentityModel.Tokens.JsonWebKey`) from some source, such as a key vault, and then use it to initialize the `DilithiumSecurityKey`:
+It is possible to manually load JWK (`Microsoft.IdentityModel.Tokens.JsonWebKey`) from some source, such as a key vault, and then use it to initialize the `MlDsaSecurityKey`:
 
 ```csharp
 // load the JWK from somewhere e.g. KeyVault or filesystem
 builder.Services.AddIdentityServer()
-    .AddDilithiumSigningCredential(new DilithiumSecurityKey(jwk)) // key from the JWK
+    .AddMlDsaSigningCredential(new MlDsaSecurityKey(jwk)) // key from the JWK
     // continue with the rest of Identity Server configuration
 ```
 
@@ -85,22 +87,22 @@ Alternatively, it can also be loaded from the file system (using a path relative
 
 ```csharp
 builder.Services.AddIdentityServer()
-    .AddDilithiumSigningCredential(pathToDilithiumJWK) // key from the JWK on the filesystem
+    .AddMlDsaSigningCredential(pathToMlDsaJwk) // key from the JWK on the filesystem
     // continue with the rest of Identity Server configuration
 ```
 
-#### Load a Dilithium key from byte array public/private key representations
+#### Load an ML-DSA key from byte array public/private key representations
 
 ```csharp
 // load the public key and private key from somewhere e.g. KeyVault or filesystem
 byte[] privateKey = ...
 byte[] publicKey = ...
 builder.Services.AddIdentityServer()
-    .AddDilithiumSigningCredential(new DilithiumSecurityKey("CRYDI3", publicKey, privateKey)) // key from the JWK
+    .AddMlDsaSigningCredential(new MlDsaSecurityKey("ML-DSA-65", publicKey, privateKey)) // key from the JWK
     // continue with the rest of Identity Server configuration
 ```
 
-Once registered, the Identity Server will announce the public part of the Dilithium key in the JWKS document. Other non-post quantum keys are allowed to co-exist. Example:
+Once registered, the Identity Server will announce the public part of the ML-DSA key in the JWKS document. Other non-post quantum keys are allowed to co-exist. Example:
 
 ```json
 {
@@ -114,29 +116,29 @@ Once registered, the Identity Server will announce the public part of the Dilith
             "alg": "RS256"
         },
         {
-            "kty": "MLWE",
+            "kty": "AKP",
             "use": "sig",
             "kid": "A574....",
-            "alg": "CRYDI3",
+            "alg": "ML-DSA-65",
             "x": "OMjMS...."
         }
     ]
 }
 ```
 
-The JWT tokens issued by the Identity Server will contains the `"alg": "CRYDI3"` in the header; otherwise the token will be indistinguishable from the other tokens.
+The JWT tokens issued by the Identity Server will contains the `"alg": "ML-DSA-65"` in the header; otherwise the token will be indistinguishable from the other tokens.
 
 #### Automatic key management
 
-The library can also manage its own Dilithium keys using Identity Server's [key management feature](https://docs.duendesoftware.com/identityserver/v5/fundamentals/keys/). 
+The library can also manage its own ML-DSA keys using Identity Server's [key management feature](https://docs.duendesoftware.com/identityserver/v5/fundamentals/keys/). 
 
 ```csharp
 builder.Services.AddIdentityServer()
-    .AddDilithiumSupport() // automatically manage Dilithium keys
+    .AddMlDsaSupport() // automatically manage ML-DSA keys
     // continue with the rest of Identity Server configuration
 ```
 
-This set up instructs the library to create `CRYDI3` keys, store them securely and rotate them according to the schedule configured in Identity Server. By default, the keys are automatically rotated every 90 days, announced 14 days in advance, and retained for 14 days after it expires.
+This set up instructs the library to create `ML-DSA-65` keys, store them securely and rotate them according to the schedule configured in Identity Server. By default, the keys are automatically rotated every 90 days, announced 14 days in advance, and retained for 14 days after it expires.
 
 The normal customization of key management rules is still supported, and the library will respect those rules:
 
@@ -152,18 +154,18 @@ builder.Services.AddIdentityServer(options =>
         // keep old key for 3 days in discovery for validation of tokens
         options.KeyManagement.RetentionDuration = TimeSpan.FromDays(3);
     })
-    .AddDilithiumSupport() // automatically manage Dilithium keys
+    .AddMlDsaSupport() // automatically manage ML-DSA keys
     // continue with the rest of Identity Server configuration
 ```
 
-By default, the library disallows any other keys than Dilithium, which means the built-in Identity Server behavior of generating RSA keys gets suppressed. It can be restored via the options. The same options can also be used to choose a different algorithm than `CRYDI3`:
+By default, the library disallows any other keys than ML-DSA, which means the built-in Identity Server behavior of generating RSA keys gets suppressed. It can be restored via the options. The same options can also be used to choose a different algorithm than `ML-DSA-65`:
 
 ```csharp
 builder.Services.AddIdentityServer()
-    .AddDilithiumSupport(new DilithiumSupportOptions {
-        KeyManagementAlgorithm = "CRYDI5", // override the default "CRYDI3"
-        DisallowNonDilithiumKeys = false // allow RSA keys to co-exist
-     }) // automatically manage Dilithium keys
+    .AddMlDsaSupport(new MlDsaSupportOptions {
+        KeyManagementAlgorithm = "ML-DSA-87", // override the default "ML-DSA-65"
+        DisallowNonMlDsaKeys = false // allow RSA keys to co-exist
+     }) // automatically manage ML-DSA keys
     // continue with the rest of Identity Server configuration
 ```
 
@@ -171,7 +173,7 @@ builder.Services.AddIdentityServer()
 
 [![NuGet](https://img.shields.io/nuget/v/Strathweb.Dilithium.AspNetCore.svg)](https://www.nuget.org/packages/Strathweb.Dilithium.AspNetCore/)
 
-Add-on for [Microsoft.AspNetCore.Authentication.JwtBearer](https://www.nuget.org/packages/Microsoft.AspNetCore.Authentication.JwtBearer) package, allowing for enabling Dilithium-signed JWT token validation for the `Bearer` scheme.
+Add-on for [Microsoft.AspNetCore.Authentication.JwtBearer](https://www.nuget.org/packages/Microsoft.AspNetCore.Authentication.JwtBearer) package, allowing for enabling ML-DSA-signed JWT token validation for the `Bearer` scheme.
 
 Usage:
 
@@ -181,14 +183,14 @@ builder.Services.AddAuthentication().AddJwtBearer(opt =>
     // all the usual necessary configuration such as authoritiy or audience
     // omitted for brevity
     
-    // enable Dilithium tokens
-    opt.ConfigureDilithiumTokenSupport();
+    // enable ML-DSA tokens
+    opt.ConfigureMlDsaTokenSupport();
 });
 ```
 
-When Dilithium token support is enabled, the extension takes over the management of JWKS fetched from the trusted authority. Those are cached for 24h, but this can be changed in the configuration.
+When ML-DSA token support is enabled, the extension takes over the management of JWKS fetched from the trusted authority. Those are cached for 24h, but this can be changed in the configuration.
 
-By default any other tokens from the trusted authority are allowed as well. However, it is also possible to restrict the API to only accept Dilithium based signing keys.
+By default any other tokens from the trusted authority are allowed as well. However, it is also possible to restrict the API to only accept ML-DSA based signing keys.
 
 ```csharp
 builder.Services.AddAuthentication().AddJwtBearer(opt =>
@@ -196,8 +198,8 @@ builder.Services.AddAuthentication().AddJwtBearer(opt =>
     // all the usual necessary configuration such as authoritiy or audience
     // omitted for brevity
     
-    // enable Dilithium tokens
-    opt.ConfigureDilithiumTokenSupport(dopt => dopt.AllowNonMlweKeys = false;);
+    // enable ML-DSA tokens
+    opt.ConfigureMlDsaTokenSupport(dopt => dopt.AllowNonMlDsaKeys = false;);
 });
 ```
 

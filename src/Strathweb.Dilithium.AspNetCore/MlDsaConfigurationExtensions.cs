@@ -9,29 +9,29 @@ using Strathweb.Dilithium.IdentityModel;
 
 namespace Strathweb.Dilithium.AspNetCore;
 
-public static class DilithiumConfigurationExtensions
+public static class MlDsaConfigurationExtensions
 {
-    public static void ConfigureDilithiumTokenSupport(this JwtBearerOptions options) =>
-        ConfigureDilithiumTokenSupportInternal(options, null);
+    public static void ConfigureMlDsaTokenSupport(this JwtBearerOptions options) =>
+        ConfigureMlDsaTokenSupportInternal(options, null);
 
-    public static void ConfigureDilithiumTokenSupport(this JwtBearerOptions options,
-        Action<DilithiumTokenOptions> configurationDelegate) =>
-        ConfigureDilithiumTokenSupportInternal(options, configurationDelegate);
+    public static void ConfigureMlDsaTokenSupport(this JwtBearerOptions options,
+        Action<MlDsaTokenOptions> configurationDelegate) =>
+        ConfigureMlDsaTokenSupportInternal(options, configurationDelegate);
 
-    private static void ConfigureDilithiumTokenSupportInternal(JwtBearerOptions options,
-        Action<DilithiumTokenOptions>? configurationDelegate)
+    private static void ConfigureMlDsaTokenSupportInternal(JwtBearerOptions options,
+        Action<MlDsaTokenOptions>? configurationDelegate)
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
         if (options.TokenValidationParameters == null) throw new ArgumentNullException(nameof(options.TokenValidationParameters));
-        var dilithiumTokenOptions = new DilithiumTokenOptions();
+        var mlDsaTokenOptions = new MlDsaTokenOptions();
 
-        configurationDelegate?.Invoke(dilithiumTokenOptions);
-        if (!dilithiumTokenOptions.SupportedAlgorithms.Any())
+        configurationDelegate?.Invoke(mlDsaTokenOptions);
+        if (!mlDsaTokenOptions.SupportedAlgorithms.Any())
         {
             return;
         }
         
-        var lweCryptoProvideFactory = new DilithiumCryptoProviderFactory();
+        var mlDsaCryptoProviderFactory = new MlDsaCryptoProviderFactory();
         options.TokenValidationParameters.IssuerSigningKeyResolver = (_, securityToken, kid, tokenValidationParameters) =>
         {
             if (securityToken is not JwtSecurityToken && securityToken is not JsonWebToken)
@@ -39,12 +39,12 @@ public static class DilithiumConfigurationExtensions
                 return Enumerable.Empty<SecurityKey>();
             }
 
-            if (dilithiumTokenOptions.FixedSecurityKeys.Any())
+            if (mlDsaTokenOptions.FixedSecurityKeys.Any())
             {
-                return dilithiumTokenOptions.FixedSecurityKeys;
+                return mlDsaTokenOptions.FixedSecurityKeys;
             }
 
-            if (!dilithiumTokenOptions.DisableCache && KeyCache.Default.TryGetValue(kid, out var result) &&
+            if (!mlDsaTokenOptions.DisableCache && KeyCache.Default.TryGetValue(kid, out var result) &&
                 result is ICollection<SecurityKey> cachedSecurityKeys)
             {
                 return cachedSecurityKeys;
@@ -76,26 +76,26 @@ public static class DilithiumConfigurationExtensions
             var processedKeys = new List<SecurityKey>();
             foreach (var key in matchingKeys)
             {
-                if (key is JsonWebKey jsonWebKey && Enum.TryParse<MlweAlgorithm>(jsonWebKey.Alg, true, out var parsedAlg) && dilithiumTokenOptions.SupportedAlgorithms.Contains(parsedAlg))
+                if (key is JsonWebKey jsonWebKey && Enum.TryParse<AkpAlgorithm>(jsonWebKey.Alg.Replace("-",""), true, out var parsedAlg) && mlDsaTokenOptions.SupportedAlgorithms.Contains(parsedAlg))
                 {
-                    processedKeys.Add(new DilithiumSecurityKey(jsonWebKey)
+                    processedKeys.Add(new MlDsaSecurityKey(jsonWebKey)
                     {
-                        CryptoProviderFactory = lweCryptoProvideFactory
+                        CryptoProviderFactory = mlDsaCryptoProviderFactory
                     });
                 }
                 else
                 {
-                    if (dilithiumTokenOptions.AllowNonMlweKeys)
+                    if (mlDsaTokenOptions.AllowNonMlDsaKeys)
                     {
                         processedKeys.Add(key);
                     }
                 }
             }
 
-            if (!dilithiumTokenOptions.DisableCache)
+            if (!mlDsaTokenOptions.DisableCache)
             {
                 KeyCache.Default.Set(kid, processedKeys,
-                    TimeSpan.FromSeconds(dilithiumTokenOptions.CacheLifetimeInSeconds));
+                    TimeSpan.FromSeconds(mlDsaTokenOptions.CacheLifetimeInSeconds));
             }
 
             return processedKeys;

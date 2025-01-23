@@ -15,7 +15,7 @@ public static class Config
         {
             new ApiResource(name: "https://localhost:7104", displayName: "SampleApi") {
                 Scopes = new HashSet<string> { "scope1" },
-                AllowedAccessTokenSigningAlgorithms = new HashSet<string> { "CRYDI3" }
+                AllowedAccessTokenSigningAlgorithms = new HashSet<string> { "ML-DSA-65" }
             }
         };
 
