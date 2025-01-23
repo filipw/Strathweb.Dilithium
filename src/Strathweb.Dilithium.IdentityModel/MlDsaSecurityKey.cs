@@ -5,16 +5,16 @@ using Org.BouncyCastle.Security;
 
 namespace Strathweb.Dilithium.IdentityModel;
 
-public class DilithiumSecurityKey : AsymmetricSecurityKey
+public class MlDsaSecurityKey : AsymmetricSecurityKey
 {
     private readonly string _keyId;
 
     /// <summary>
-    /// Create a new Dilithium key pair in memory and init public and private keys
+    /// Create a new ML-DSA key pair in memory and init public and private keys
     /// </summary>
     /// <param name="algorithm">Supported algorithms: ML-DSA-44, ML-DSA-65 and ML-DSA-87</param>
     /// <exception cref="ArgumentNullException"></exception>
-    public DilithiumSecurityKey(string algorithm)
+    public MlDsaSecurityKey(string algorithm)
     {
         if (algorithm == null) throw new ArgumentNullException(nameof(algorithm));
         if (algorithm != "ML-DSA-44" && algorithm != "ML-DSA-65" && algorithm != "ML-DSA-87")
@@ -25,29 +25,29 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
 
         SupportedAlgorithm = algorithm;
 
-        var dilithiumParameters = GetDilithiumParameters(algorithm);
+        var mlDsaParameters = GetMlDsaParameters(algorithm);
         var random = new SecureRandom();
-        var keyGenParameters = new MLDsaKeyGenerationParameters(random, dilithiumParameters);
-        var dilithiumKeyPairGenerator = new MLDsaKeyPairGenerator();
-        dilithiumKeyPairGenerator.Init(keyGenParameters);
+        var keyGenParameters = new MLDsaKeyGenerationParameters(random, mlDsaParameters);
+        var mlDsaKeyPairGenerator = new MLDsaKeyPairGenerator();
+        mlDsaKeyPairGenerator.Init(keyGenParameters);
 
-        var keyPair = dilithiumKeyPairGenerator.GenerateKeyPair();
+        var keyPair = mlDsaKeyPairGenerator.GenerateKeyPair();
 
         PublicKey = (MLDsaPublicKeyParameters)keyPair.Public;
         PrivateKey = (MLDsaPrivateKeyParameters)keyPair.Private;
         _keyId = BitConverter.ToString(SecureRandom.GetNextBytes(random, 16)).Replace("-", "");
-        CryptoProviderFactory = new DilithiumCryptoProviderFactory();
+        CryptoProviderFactory = new MlDsaCryptoProviderFactory();
     }
 
     /// <summary>
-    /// Create a key from JSON Web Key representation.
+    /// Create an ML-DSA key from JSON Web Key representation.
     /// X property is mandatory and will be used to init public key.
     /// If the key contains D property, it will be used to init private key.
     /// </summary>
     /// <param name="jsonWebKey">Supported algorithms: ML-DSA-44, ML-DSA-65 and ML-DSA-87</param>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException"></exception>
-    public DilithiumSecurityKey(JsonWebKey jsonWebKey)
+    public MlDsaSecurityKey(JsonWebKey jsonWebKey)
     {
         if (jsonWebKey == null) throw new ArgumentNullException(nameof(jsonWebKey));
         if (jsonWebKey.X == null) throw new ArgumentException("X parameter (public key) is missing!");
@@ -60,21 +60,21 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
 
         SupportedAlgorithm = jsonWebKey.Alg;
 
-        var dilithiumParameters = GetDilithiumParameters(jsonWebKey.Alg);
-        PublicKey = MLDsaPublicKeyParameters.FromEncoding(dilithiumParameters, Base64UrlEncoder.DecodeBytes(jsonWebKey.X));
+        var mlDsaParameters = GetMlDsaParameters(jsonWebKey.Alg);
+        PublicKey = MLDsaPublicKeyParameters.FromEncoding(mlDsaParameters, Base64UrlEncoder.DecodeBytes(jsonWebKey.X));
 
         if (jsonWebKey.D != null)
         {
-            PrivateKey = MLDsaPrivateKeyParameters.FromEncoding(dilithiumParameters, Base64UrlEncoder.DecodeBytes(jsonWebKey.D));
+            PrivateKey = MLDsaPrivateKeyParameters.FromEncoding(mlDsaParameters, Base64UrlEncoder.DecodeBytes(jsonWebKey.D));
         }
 
         _keyId = jsonWebKey.KeyId;
         KeySize = jsonWebKey.KeySize;
-        CryptoProviderFactory = new DilithiumCryptoProviderFactory();
+        CryptoProviderFactory = new MlDsaCryptoProviderFactory();
     }
 
     /// <summary>
-    /// Load a key from byte representation of public and an optional private key.
+    /// Load an ML-DSA key from byte representation of public and an optional private key.
     /// </summary>
     /// <param name="algorithm">Supported algorithms: ML-DSA-44, ML-DSA-65 and ML-DSA-87</param>
     /// <param name="keyId"></param>
@@ -82,7 +82,7 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
     /// <param name="privateKey">Byte encoded Dilithium private key (optional).</param>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="NotSupportedException"></exception>
-    public DilithiumSecurityKey(string algorithm, string keyId, byte[] publicKey, byte[]? privateKey = null)
+    public MlDsaSecurityKey(string algorithm, string keyId, byte[] publicKey, byte[]? privateKey = null)
     {
         if (algorithm == null) throw new ArgumentNullException(nameof(algorithm));
         if (keyId == null) throw new ArgumentNullException(nameof(keyId));
@@ -95,16 +95,16 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
 
         SupportedAlgorithm = algorithm;
 
-        var dilithiumParameters = GetDilithiumParameters(algorithm);
-        PublicKey = MLDsaPublicKeyParameters.FromEncoding(dilithiumParameters, publicKey);
+        var mlDsaParameters = GetMlDsaParameters(algorithm);
+        PublicKey = MLDsaPublicKeyParameters.FromEncoding(mlDsaParameters, publicKey);
 
         if (privateKey != null)
         {
-            PrivateKey = MLDsaPrivateKeyParameters.FromEncoding(dilithiumParameters, privateKey);
+            PrivateKey = MLDsaPrivateKeyParameters.FromEncoding(mlDsaParameters, privateKey);
         }
 
         _keyId = keyId;
-        CryptoProviderFactory = new DilithiumCryptoProviderFactory();
+        CryptoProviderFactory = new MlDsaCryptoProviderFactory();
     }
 
     public MLDsaPublicKeyParameters PublicKey { get; set; }
@@ -119,7 +119,7 @@ public class DilithiumSecurityKey : AsymmetricSecurityKey
 
     public override bool IsSupportedAlgorithm(string algorithm) => SupportedAlgorithm == algorithm;
 
-    private MLDsaParameters GetDilithiumParameters(string algorithm)
+    private MLDsaParameters GetMlDsaParameters(string algorithm)
     {
         if (algorithm == "ML-DSA-44") return MLDsaParameters.ml_dsa_44;
         if (algorithm == "ML-DSA-65") return MLDsaParameters.ml_dsa_65;

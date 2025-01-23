@@ -4,63 +4,63 @@ using Strathweb.Dilithium.IdentityModel;
 
 namespace Strathweb.Dilithium.Tests;
 
-public class DilithiumCryptoProviderFactoryTests
+public class MlDsaCryptoProviderFactoryTests
 {
     [Fact]
-    public void IsSupportedAlgorithm_ReturnsFalseForNonDilithiumKey()
+    public void IsSupportedAlgorithm_ReturnsFalseForNonMlDsaKey()
     {
         var testKey = new TestSecurityKey();
-        var factory = new DilithiumCryptoProviderFactory();
+        var factory = new MlDsaCryptoProviderFactory();
         Assert.False(factory.IsSupportedAlgorithm("ML-DSA-65", testKey));
     }
     
     [Fact]
-    public void IsSupportedAlgorithm_ReturnsFalseForNonDilithiumAlgo()
+    public void IsSupportedAlgorithm_ReturnsFalseForNonMlDsaAlgo()
     {
-        var factory = new DilithiumCryptoProviderFactory();
+        var factory = new MlDsaCryptoProviderFactory();
         Assert.False(factory.IsSupportedAlgorithm("Foo"));
     }
     
     [Fact]
-    public void IsSupportedAlgorithm_ReturnsFalseForNonDilithiumAlgo2()
+    public void IsSupportedAlgorithm_ReturnsFalseForNonMlDsaAlgo2()
     {
-        var testKey = new DilithiumSecurityKey("ML-DSA-65");
-        var factory = new DilithiumCryptoProviderFactory();
+        var testKey = new MlDsaSecurityKey("ML-DSA-65");
+        var factory = new MlDsaCryptoProviderFactory();
         Assert.False(factory.IsSupportedAlgorithm("Foo", testKey));
     }
     
     [Fact]
-    public void CreateForSigning_ThrowsForNonDilithiumKeys()
+    public void CreateForSigning_ThrowsForNonMlDsaKeys()
     {
         var testKey = new TestSecurityKey();
-        var factory = new DilithiumCryptoProviderFactory();
+        var factory = new MlDsaCryptoProviderFactory();
         Assert.Throws<NotSupportedException>(() => factory.CreateForSigning(testKey, "ML-DSA-65"));
     }
     
     [Fact]
-    public void CreateForVerifying_ThrowsForNonDilithiumKeys()
+    public void CreateForVerifying_ThrowsForNonMlDsaKeys()
     {
         var testKey = new TestSecurityKey();
-        var factory = new DilithiumCryptoProviderFactory();
+        var factory = new MlDsaCryptoProviderFactory();
         Assert.Throws<NotSupportedException>(() => factory.CreateForVerifying(testKey, "ML-DSA-65"));
     }
     
     [Fact]
-    public void CreateForSigning_ReturnsDilithiumSignatureProvider()
+    public void CreateForSigning_ReturnsMlDsaSignatureProvider()
     {
-        var testKey = new DilithiumSecurityKey("ML-DSA-65");
-        var factory = new DilithiumCryptoProviderFactory();
+        var testKey = new MlDsaSecurityKey("ML-DSA-65");
+        var factory = new MlDsaCryptoProviderFactory();
         var signatureProvider = factory.CreateForSigning(testKey, "ML-DSA-65");
-        Assert.IsType<DilithiumSignatureProvider>(signatureProvider);
+        Assert.IsType<MlDsaSignatureProvider>(signatureProvider);
     }
     
     [Fact]
-    public void CreateForVerifying_ReturnsDilithiumSignatureProvider()
+    public void CreateForVerifying_ReturnsMlDsaSignatureProvider()
     {
-        var testKey = new DilithiumSecurityKey("ML-DSA-65");
-        var factory = new DilithiumCryptoProviderFactory();
+        var testKey = new MlDsaSecurityKey("ML-DSA-65");
+        var factory = new MlDsaCryptoProviderFactory();
         var signatureProvider = factory.CreateForVerifying(testKey, "ML-DSA-65");
-        Assert.IsType<DilithiumSignatureProvider>(signatureProvider);
+        Assert.IsType<MlDsaSignatureProvider>(signatureProvider);
     }
 
     [Theory]
@@ -70,7 +70,7 @@ public class DilithiumCryptoProviderFactoryTests
     public void SignAndVerify(string algorithm)
     {
         var content = Encoding.UTF8.GetBytes($"{TestTokenHeader}.{TestTokenPayload}");
-        var key = new DilithiumSecurityKey(algorithm);
+        var key = new MlDsaSecurityKey(algorithm);
         var signatureProvider = key.CryptoProviderFactory.CreateForSigning(key, algorithm);
         var signed = signatureProvider.Sign(content);
         
@@ -85,7 +85,7 @@ public class DilithiumCryptoProviderFactoryTests
     public void CreateForVerifying_SigningThrows(string algorithm)
     {
         var content = Encoding.UTF8.GetBytes($"{TestTokenHeader}.{TestTokenPayload}");
-        var key = new DilithiumSecurityKey(algorithm);
+        var key = new MlDsaSecurityKey(algorithm);
         var signatureProvider = key.CryptoProviderFactory.CreateForVerifying(key, algorithm);
         Assert.Throws<NotSupportedException>(() => signatureProvider.Sign(content));
     }
@@ -97,12 +97,12 @@ public class DilithiumCryptoProviderFactoryTests
     public void SignAndVerify_RoundTripFromJWK(string algorithm)
     {
         var content = Encoding.UTF8.GetBytes($"{TestTokenHeader}.{TestTokenPayload}");
-        var key = new DilithiumSecurityKey(algorithm);
+        var key = new MlDsaSecurityKey(algorithm);
         var signatureProvider = key.CryptoProviderFactory.CreateForSigning(key, algorithm);
         var signed = signatureProvider.Sign(content);
 
         var jwk = key.ToJsonWebKey(includePrivateKey: false);
-        var verificationKey = new DilithiumSecurityKey(jwk);
+        var verificationKey = new MlDsaSecurityKey(jwk);
         var verificationProvider = verificationKey.CryptoProviderFactory.CreateForVerifying(key, algorithm);
         Assert.True(verificationProvider.Verify(content, signed));
     }

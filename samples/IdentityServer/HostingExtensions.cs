@@ -20,9 +20,9 @@ internal static class HostingExtensions
             {
                 opt.EmitStaticAudienceClaim = true;
             })
-            .AddDilithiumSupport() // automatic key management
-            //.AddDilithiumSigningCredential(new DilithiumSecurityKey("ML-DSA-65")) // new fixed key per startup
-            //.AddDilithiumSigningCredential(new DilithiumSecurityKey(jwk)) // fixed key from the filesystem / storage
+            .AddMlDsaSupport() // automatic key management
+            //.AddMlDsaSigningCredential(new MlDsaSecurityKey("ML-DSA-65")) // new fixed key per startup
+            //.AddMlDsaSigningCredential(new MlDsaSecurityKey(jwk)) // fixed key from the filesystem / storage
             .AddInMemoryApiScopes(Config.ApiScopes)
             .AddInMemoryApiResources(Config.ApiResources)
             .AddInMemoryClients(Config.Clients);

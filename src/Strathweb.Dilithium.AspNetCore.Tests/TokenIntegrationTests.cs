@@ -43,7 +43,6 @@ public class TokenIntegrationTests : IClassFixture<WebApplicationFactory<Program
             ClientSecret = "secret"
         });
 
-        //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
         var apiRequest = new HttpRequestMessage(HttpMethod.Get, "/");
         apiRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
         var apiResponse = await client.SendAsync(apiRequest);

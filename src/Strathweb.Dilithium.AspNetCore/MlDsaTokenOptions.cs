@@ -2,13 +2,13 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Strathweb.Dilithium.AspNetCore;
 
-public record DilithiumTokenOptions
+public record MlDsaTokenOptions
 {
     public bool DisableCache { get; set; } = false;
 
     public uint CacheLifetimeInSeconds { get; set; } = 3600 * 24;
 
-    public bool AllowNonMlweKeys { get; set; } = true;
+    public bool AllowNonMlDsaKeys { get; set; } = true;
 
     public SecurityKey[] FixedSecurityKeys { get; set; } = Array.Empty<SecurityKey>();
     

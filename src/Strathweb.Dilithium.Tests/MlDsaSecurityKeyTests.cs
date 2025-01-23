@@ -3,7 +3,7 @@ using Strathweb.Dilithium.IdentityModel;
 
 namespace Strathweb.Dilithium.Tests;
 
-public class DilithiumSecurityKeyTests
+public class MlDsaSecurityKeyTests
 {
     [Theory]
     [InlineData("ML-DSA-44")]
@@ -11,14 +11,14 @@ public class DilithiumSecurityKeyTests
     [InlineData("ML-DSA-87")]
     public void CanInit(string algorithm)
     {
-        var securityKey = new DilithiumSecurityKey(algorithm);
+        var securityKey = new MlDsaSecurityKey(algorithm);
         
         Assert.NotNull(securityKey.KeyId);
         Assert.NotNull(securityKey.PublicKey);
         Assert.NotNull(securityKey.PrivateKey);
         Assert.True(securityKey.IsSupportedAlgorithm(algorithm));
         Assert.NotNull(securityKey.CryptoProviderFactory);
-        Assert.Equal(typeof(DilithiumCryptoProviderFactory), securityKey.CryptoProviderFactory.GetType());
+        Assert.Equal(typeof(MlDsaCryptoProviderFactory), securityKey.CryptoProviderFactory.GetType());
         Assert.Equal(PrivateKeyStatus.Exists, securityKey.PrivateKeyStatus);
     }
     
@@ -28,7 +28,7 @@ public class DilithiumSecurityKeyTests
     [InlineData("ML-DSA-87")]
     public void CanExportToJWK(string algorithm)
     {
-        var securityKey = new DilithiumSecurityKey(algorithm);
+        var securityKey = new MlDsaSecurityKey(algorithm);
         var jwk = securityKey.ToJsonWebKey(includePrivateKey: true);
         
         Assert.Equal("AKP", jwk.Kty);
@@ -43,7 +43,7 @@ public class DilithiumSecurityKeyTests
     [Fact]
     public void CanExportToJWK_WithoutPrivateKey()
     {
-        var securityKey = new DilithiumSecurityKey("ML-DSA-44");
+        var securityKey = new MlDsaSecurityKey("ML-DSA-44");
         var jwk = securityKey.ToJsonWebKey(includePrivateKey: false);
         
         Assert.Equal("AKP", jwk.Kty);
@@ -59,10 +59,10 @@ public class DilithiumSecurityKeyTests
     [InlineData("ML-DSA-87")]
     public void CanImportFromJWK(string algorithm)
     {
-        var securityKey = new DilithiumSecurityKey(algorithm);
+        var securityKey = new MlDsaSecurityKey(algorithm);
         var jwk = securityKey.ToJsonWebKey(includePrivateKey: true);
 
-        var importedKey = new DilithiumSecurityKey(jwk);
+        var importedKey = new MlDsaSecurityKey(jwk);
         
         Assert.Equal(securityKey.KeyId, importedKey.KeyId);
         Assert.Equal(securityKey.PublicKey.GetEncoded(), importedKey.PublicKey.GetEncoded());
@@ -71,22 +71,22 @@ public class DilithiumSecurityKeyTests
         Assert.Equal(PrivateKeyStatus.Exists, importedKey.PrivateKeyStatus);
         Assert.True(importedKey.IsSupportedAlgorithm(algorithm));
         Assert.NotNull(importedKey.CryptoProviderFactory);
-        Assert.Equal(typeof(DilithiumCryptoProviderFactory), importedKey.CryptoProviderFactory.GetType());
+        Assert.Equal(typeof(MlDsaCryptoProviderFactory), importedKey.CryptoProviderFactory.GetType());
     }
     
     [Fact]
     public void CanImportFromJWK_WithoutPrivateKey()
     {
-        var securityKey = new DilithiumSecurityKey("ML-DSA-44");
+        var securityKey = new MlDsaSecurityKey("ML-DSA-44");
         var jwk = securityKey.ToJsonWebKey(includePrivateKey: false);
 
-        var importedKey = new DilithiumSecurityKey(jwk);
+        var importedKey = new MlDsaSecurityKey(jwk);
         
         Assert.Equal(securityKey.KeyId, importedKey.KeyId);
         Assert.Equal(securityKey.PublicKey.GetEncoded(), importedKey.PublicKey.GetEncoded());
         Assert.True(importedKey.IsSupportedAlgorithm("ML-DSA-44"));
         Assert.NotNull(importedKey.CryptoProviderFactory);
-        Assert.Equal(typeof(DilithiumCryptoProviderFactory), importedKey.CryptoProviderFactory.GetType());
+        Assert.Equal(typeof(MlDsaCryptoProviderFactory), importedKey.CryptoProviderFactory.GetType());
         Assert.Null(importedKey.PrivateKey);
         Assert.False(importedKey.HasPrivateKey);
         Assert.Equal(PrivateKeyStatus.DoesNotExist, importedKey.PrivateKeyStatus);
@@ -98,8 +98,8 @@ public class DilithiumSecurityKeyTests
     [InlineData("ML-DSA-87")]
     public void CanImportFromByteArrayEncodedKeys(string algorithm)
     {
-        var securityKey = new DilithiumSecurityKey(algorithm);
-        var importedKey = new DilithiumSecurityKey(algorithm, securityKey.KeyId, securityKey.PublicKey.GetEncoded(), securityKey.PrivateKey.GetEncoded());
+        var securityKey = new MlDsaSecurityKey(algorithm);
+        var importedKey = new MlDsaSecurityKey(algorithm, securityKey.KeyId, securityKey.PublicKey.GetEncoded(), securityKey.PrivateKey.GetEncoded());
         
         Assert.Equal(securityKey.KeyId, importedKey.KeyId);
         Assert.Equal(securityKey.PublicKey.GetEncoded(), importedKey.PublicKey.GetEncoded());
@@ -108,6 +108,6 @@ public class DilithiumSecurityKeyTests
         Assert.Equal(PrivateKeyStatus.Exists, importedKey.PrivateKeyStatus);
         Assert.True(importedKey.IsSupportedAlgorithm(algorithm));
         Assert.NotNull(importedKey.CryptoProviderFactory);
-        Assert.Equal(typeof(DilithiumCryptoProviderFactory), importedKey.CryptoProviderFactory.GetType());
+        Assert.Equal(typeof(MlDsaCryptoProviderFactory), importedKey.CryptoProviderFactory.GetType());
     }
 }
