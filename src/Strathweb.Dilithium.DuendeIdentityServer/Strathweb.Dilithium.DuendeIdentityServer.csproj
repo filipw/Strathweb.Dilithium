@@ -11,7 +11,7 @@
     </ItemGroup>
     
     <ItemGroup>
-        <PackageReference Include="Duende.IdentityServer" Version="7.0.6" />
+        <PackageReference Include="Duende.IdentityServer" Version="7.0.8" />
     </ItemGroup>
 
 </Project>
