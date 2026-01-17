@@ -9,12 +9,9 @@ public class MlDsaSecurityKey : AsymmetricSecurityKey
 {
     private readonly string _keyId;
 
-    /// <summary>
-    /// Create a new ML-DSA key pair in memory and init public and private keys
-    /// </summary>
     /// <param name="algorithm">Supported algorithms: ML-DSA-44, ML-DSA-65 and ML-DSA-87</param>
-    /// <exception cref="ArgumentNullException"></exception>
-    public MlDsaSecurityKey(string algorithm)
+    /// <param name="backend">PQC backend to use. Defaults to BouncyCastle.</param>
+    public MlDsaSecurityKey(string algorithm, IPqcBackend? backend = null)
     {
         if (algorithm == null) throw new ArgumentNullException(nameof(algorithm));
         if (algorithm != "ML-DSA-44" && algorithm != "ML-DSA-65" && algorithm != "ML-DSA-87")
@@ -24,30 +21,19 @@ public class MlDsaSecurityKey : AsymmetricSecurityKey
         }
 
         SupportedAlgorithm = algorithm;
+        Backend = backend ?? new LibOqsPqcBackend();
 
-        var mlDsaParameters = GetMlDsaParameters(algorithm);
-        var random = new SecureRandom();
-        var keyGenParameters = new MLDsaKeyGenerationParameters(random, mlDsaParameters);
-        var mlDsaKeyPairGenerator = new MLDsaKeyPairGenerator();
-        mlDsaKeyPairGenerator.Init(keyGenParameters);
+        var (publicKey, privateKey) = Backend.GenerateKeyPair(algorithm);
+        PublicKey = publicKey;
+        PrivateKey = privateKey;
 
-        var keyPair = mlDsaKeyPairGenerator.GenerateKeyPair();
-
-        PublicKey = (MLDsaPublicKeyParameters)keyPair.Public;
-        PrivateKey = (MLDsaPrivateKeyParameters)keyPair.Private;
-        _keyId = BitConverter.ToString(SecureRandom.GetNextBytes(random, 16)).Replace("-", "");
+        _keyId = Guid.NewGuid().ToString("N");
         CryptoProviderFactory = new MlDsaCryptoProviderFactory();
     }
 
-    /// <summary>
-    /// Create an ML-DSA key from JSON Web Key representation.
-    /// X property is mandatory and will be used to init public key.
-    /// If the key contains D property, it will be used to init private key.
-    /// </summary>
     /// <param name="jsonWebKey">Supported algorithms: ML-DSA-44, ML-DSA-65 and ML-DSA-87</param>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="ArgumentException"></exception>
-    public MlDsaSecurityKey(JsonWebKey jsonWebKey)
+    /// <param name="backend">PQC backend to use. Defaults to BouncyCastle.</param>
+    public MlDsaSecurityKey(JsonWebKey jsonWebKey, IPqcBackend? backend = null)
     {
         if (jsonWebKey == null) throw new ArgumentNullException(nameof(jsonWebKey));
         if (jsonWebKey.X == null) throw new ArgumentException("X parameter (public key) is missing!");
@@ -59,30 +45,25 @@ public class MlDsaSecurityKey : AsymmetricSecurityKey
         }
 
         SupportedAlgorithm = jsonWebKey.Alg;
+        Backend = backend ?? new LibOqsPqcBackend();
 
-        var mlDsaParameters = GetMlDsaParameters(jsonWebKey.Alg);
-        PublicKey = MLDsaPublicKeyParameters.FromEncoding(mlDsaParameters, Base64UrlEncoder.DecodeBytes(jsonWebKey.X));
+        PublicKey = Base64UrlEncoder.DecodeBytes(jsonWebKey.X);
 
         if (jsonWebKey.D != null)
         {
-            PrivateKey = MLDsaPrivateKeyParameters.FromEncoding(mlDsaParameters, Base64UrlEncoder.DecodeBytes(jsonWebKey.D));
+            PrivateKey = Base64UrlEncoder.DecodeBytes(jsonWebKey.D);
         }
 
         _keyId = jsonWebKey.KeyId;
-        KeySize = jsonWebKey.KeySize;
         CryptoProviderFactory = new MlDsaCryptoProviderFactory();
     }
 
-    /// <summary>
-    /// Load an ML-DSA key from byte representation of public and an optional private key.
-    /// </summary>
     /// <param name="algorithm">Supported algorithms: ML-DSA-44, ML-DSA-65 and ML-DSA-87</param>
     /// <param name="keyId"></param>
     /// <param name="publicKey">Byte encoded Dilithium public key.</param>
     /// <param name="privateKey">Byte encoded Dilithium private key (optional).</param>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="NotSupportedException"></exception>
-    public MlDsaSecurityKey(string algorithm, string keyId, byte[] publicKey, byte[]? privateKey = null)
+    /// <param name="backend">PQC backend to use. Defaults to BouncyCastle.</param>
+    public MlDsaSecurityKey(string algorithm, string keyId, byte[] publicKey, byte[]? privateKey = null, IPqcBackend? backend = null)
     {
         if (algorithm == null) throw new ArgumentNullException(nameof(algorithm));
         if (keyId == null) throw new ArgumentNullException(nameof(keyId));
@@ -94,39 +75,31 @@ public class MlDsaSecurityKey : AsymmetricSecurityKey
         }
 
         SupportedAlgorithm = algorithm;
-
-        var mlDsaParameters = GetMlDsaParameters(algorithm);
-        PublicKey = MLDsaPublicKeyParameters.FromEncoding(mlDsaParameters, publicKey);
+        Backend = backend ?? new LibOqsPqcBackend();
+        PublicKey = publicKey;
 
         if (privateKey != null)
         {
-            PrivateKey = MLDsaPrivateKeyParameters.FromEncoding(mlDsaParameters, privateKey);
+            PrivateKey = privateKey;
         }
 
         _keyId = keyId;
         CryptoProviderFactory = new MlDsaCryptoProviderFactory();
     }
 
-    public MLDsaPublicKeyParameters PublicKey { get; set; }
+    public byte[] PublicKey { get; set; }
 
-    public MLDsaPrivateKeyParameters? PrivateKey { get; set; }
+    public byte[]? PrivateKey { get; set; }
 
-    public override int KeySize { get; }
+    public IPqcBackend Backend { get; }
+
+    public override int KeySize => PublicKey.Length * 8; // Approximation
 
     public string SupportedAlgorithm { get; }
 
     public override string KeyId => _keyId;
 
     public override bool IsSupportedAlgorithm(string algorithm) => SupportedAlgorithm == algorithm;
-
-    private MLDsaParameters GetMlDsaParameters(string algorithm)
-    {
-        if (algorithm == "ML-DSA-44") return MLDsaParameters.ml_dsa_44;
-        if (algorithm == "ML-DSA-65") return MLDsaParameters.ml_dsa_65;
-        if (algorithm == "ML-DSA-87") return MLDsaParameters.ml_dsa_87;
-
-        throw new NotSupportedException($"Unsupported algorithm type: '{algorithm}'");
-    }
 
     [Obsolete("HasPrivateKey method is deprecated, please use PrivateKeyStatus instead.")]
     public override bool HasPrivateKey => PrivateKey != null;
@@ -140,14 +113,14 @@ public class MlDsaSecurityKey : AsymmetricSecurityKey
         {
             Kty = "AKP",
             Kid = KeyId,
-            X = Base64UrlEncoder.Encode(PublicKey.GetEncoded()),
+            X = Base64UrlEncoder.Encode(PublicKey),
             Alg = SupportedAlgorithm,
             Use = "sig"
         };
 
         if (includePrivateKey && PrivateKey != null)
         {
-            jsonWebKey.D = Base64UrlEncoder.Encode(PrivateKey.GetEncoded());
+            jsonWebKey.D = Base64UrlEncoder.Encode(PrivateKey);
         }
 
         return jsonWebKey;

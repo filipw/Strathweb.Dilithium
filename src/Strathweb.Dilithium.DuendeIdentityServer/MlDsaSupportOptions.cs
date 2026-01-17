@@ -11,4 +11,6 @@ public class MlDsaSupportOptions
     public bool DisallowNonMlDsaKeys { get; set; } = true;
     
     public MlDsaSecurityKey? StaticKey { get; set; }
+
+    public IPqcBackend? Backend { get; set; }
 }

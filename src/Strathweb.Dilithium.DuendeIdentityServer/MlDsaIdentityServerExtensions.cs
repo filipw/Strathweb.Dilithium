@@ -38,6 +38,8 @@ public static class MlDsaIdentityServerExtensions
                     $"Algorithm {mlDsaSupportOptions.KeyManagementAlgorithm} is not supported. Supported algorithms: ML-DSA-44, ML-DSA-65 and ML-DSA-87.");
             }
             
+            builder.Services.AddSingleton(mlDsaSupportOptions);
+
             if (mlDsaSupportOptions.DisallowNonMlDsaKeys)
             {
                 builder.Services.Configure((IdentityServerOptions identityServerOptions) =>
@@ -87,7 +89,7 @@ public static class MlDsaIdentityServerExtensions
         return builder;
     }
     
-    public static IIdentityServerBuilder AddMlDsaSigningCredential(this IIdentityServerBuilder builder, string jwkPath)
+    public static IIdentityServerBuilder AddMlDsaSigningCredential(this IIdentityServerBuilder builder, string jwkPath, IPqcBackend? backend = null)
     {
         if (jwkPath == null) throw new ArgumentNullException(nameof(jwkPath));
 
@@ -108,6 +110,6 @@ public static class MlDsaIdentityServerExtensions
             throw new Exception($"Could not deserialize JWK from '{jwkPath}'");
         }
 
-        return builder.AddMlDsaSigningCredential(new MlDsaSecurityKey(jwk));
+        return builder.AddMlDsaSigningCredential(new MlDsaSecurityKey(jwk, backend));
     }
 }
