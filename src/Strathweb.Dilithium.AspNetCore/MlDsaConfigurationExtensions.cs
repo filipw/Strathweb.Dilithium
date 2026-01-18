@@ -78,7 +78,7 @@ public static class MlDsaConfigurationExtensions
             {
                 if (key is JsonWebKey jsonWebKey && Enum.TryParse<AkpAlgorithm>(jsonWebKey.Alg.Replace("-",""), true, out var parsedAlg) && mlDsaTokenOptions.SupportedAlgorithms.Contains(parsedAlg))
                 {
-                    processedKeys.Add(new MlDsaSecurityKey(jsonWebKey)
+                    processedKeys.Add(new MlDsaSecurityKey(jsonWebKey, mlDsaTokenOptions.Backend)
                     {
                         CryptoProviderFactory = mlDsaCryptoProviderFactory
                     });

@@ -19,8 +19,8 @@ public class MlDsaKeyContainer : KeyContainer
     public MlDsaKeyContainer(MlDsaSecurityKey key, string algorithm, DateTime created)
         : base(key.KeyId, algorithm, created)
     {
-        D = key.PrivateKey.GetEncoded();
-        X = key.PublicKey.GetEncoded();
+        D = key.PrivateKey ?? Array.Empty<byte>();
+        X = key.PublicKey;
     }
 
     /// <summary>

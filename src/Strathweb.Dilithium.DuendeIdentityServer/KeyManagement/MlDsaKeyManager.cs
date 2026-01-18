@@ -27,6 +27,7 @@ public class MlDsaKeyManager : IKeyManager
     private readonly IConcurrencyLock<KeyManager> _newKeyLock;
     private readonly ILogger<KeyManager> _logger;
     private readonly IIssuerNameService _issuerNameService;
+    private readonly MlDsaSupportOptions _mlDsaOptions;
 
     /// <summary>
     /// Constructor for KeyManager
@@ -39,6 +40,7 @@ public class MlDsaKeyManager : IKeyManager
     /// <param name="newKeyLock"></param>
     /// <param name="logger"></param>
     /// <param name="issuerNameService"></param>
+    /// <param name="mlDsaOptions"></param>
     public MlDsaKeyManager(
         IdentityServerOptions options,
         ISigningKeyStore store,
@@ -47,7 +49,8 @@ public class MlDsaKeyManager : IKeyManager
         ISystemClock clock,
         IConcurrencyLock<KeyManager> newKeyLock,
         ILogger<KeyManager> logger,
-        IIssuerNameService issuerNameService)
+        IIssuerNameService issuerNameService,
+        MlDsaSupportOptions mlDsaOptions)
     {
         _options = options;
         _store = store;
@@ -57,6 +60,7 @@ public class MlDsaKeyManager : IKeyManager
         _newKeyLock = newKeyLock;
         _logger = logger;
         _issuerNameService = issuerNameService;
+        _mlDsaOptions = mlDsaOptions;
     }
 
     /// <inheritdoc />
@@ -282,7 +286,7 @@ public class MlDsaKeyManager : IKeyManager
         }
         else if (alg.IsMlDsaKey())
         {
-            var mlDsaSecurityKey = new MlDsaSecurityKey(alg.Name);
+            var mlDsaSecurityKey = new MlDsaSecurityKey(alg.Name, _mlDsaOptions.Backend);
             container = new MlDsaKeyContainer(mlDsaSecurityKey, alg.Name, now);
         }
         else
