@@ -16,14 +16,15 @@ public class SystemCryptographyPqcBackend : IPqcBackend
         var alg = GetMLDsaAlgorithm(algorithm);
         using var mldsaKey = MLDsa.GenerateKey(alg);
         
-        return (mldsaKey.ExportSubjectPublicKeyInfo(), mldsaKey.ExportPkcs8PrivateKey());
+        return (mldsaKey.ExportMLDsaPublicKey(), mldsaKey.ExportMLDsaPrivateKey());
     }
 
     public byte[] Sign(string algorithm, byte[] data, byte[] privateKey)
     {
         if (!IsSupported) throw new NotSupportedException("ML-DSA is not supported on this platform.");
 
-        using var mldsaKey = MLDsa.ImportPkcs8PrivateKey(privateKey);
+        var alg = GetMLDsaAlgorithm(algorithm);
+        using var mldsaKey = MLDsa.ImportMLDsaPrivateKey(alg, privateKey);
         return mldsaKey.SignData(data);
     }
 
@@ -31,7 +32,8 @@ public class SystemCryptographyPqcBackend : IPqcBackend
     {
         if (!IsSupported) throw new NotSupportedException("ML-DSA is not supported on this platform.");
 
-        using var mldsaKey = MLDsa.ImportSubjectPublicKeyInfo(publicKey);
+        var alg = GetMLDsaAlgorithm(algorithm);
+        using var mldsaKey = MLDsa.ImportMLDsaPublicKey(alg, publicKey);
         return mldsaKey.VerifyData(data, signature);
     }
 

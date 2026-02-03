@@ -10,7 +10,7 @@ public class MlDsaSecurityKey : AsymmetricSecurityKey
     private readonly string _keyId;
 
     /// <param name="algorithm">Supported algorithms: ML-DSA-44, ML-DSA-65 and ML-DSA-87</param>
-    /// <param name="backend">PQC backend to use. Defaults to BouncyCastle.</param>
+    /// <param name="backend">PQC backend to use. Defaults to Maybe LibOQS.NET.</param>
     public MlDsaSecurityKey(string algorithm, IPqcBackend? backend = null)
     {
         if (algorithm == null) throw new ArgumentNullException(nameof(algorithm));
@@ -32,7 +32,7 @@ public class MlDsaSecurityKey : AsymmetricSecurityKey
     }
 
     /// <param name="jsonWebKey">Supported algorithms: ML-DSA-44, ML-DSA-65 and ML-DSA-87</param>
-    /// <param name="backend">PQC backend to use. Defaults to BouncyCastle.</param>
+    /// <param name="backend">PQC backend to use. Defaults to Maybe LibOQS.NET.</param>
     public MlDsaSecurityKey(JsonWebKey jsonWebKey, IPqcBackend? backend = null)
     {
         if (jsonWebKey == null) throw new ArgumentNullException(nameof(jsonWebKey));
@@ -62,7 +62,7 @@ public class MlDsaSecurityKey : AsymmetricSecurityKey
     /// <param name="keyId"></param>
     /// <param name="publicKey">Byte encoded Dilithium public key.</param>
     /// <param name="privateKey">Byte encoded Dilithium private key (optional).</param>
-    /// <param name="backend">PQC backend to use. Defaults to BouncyCastle.</param>
+    /// <param name="backend">PQC backend to use. Defaults to Maybe LibOQS.NET.</param>
     public MlDsaSecurityKey(string algorithm, string keyId, byte[] publicKey, byte[]? privateKey = null, IPqcBackend? backend = null)
     {
         if (algorithm == null) throw new ArgumentNullException(nameof(algorithm));
