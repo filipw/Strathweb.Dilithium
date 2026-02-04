@@ -26,6 +26,25 @@ public class MlDsaSignatureProvider : SignatureProvider
         return _key.Backend.Sign(Algorithm, input, _key.PrivateKey);
     }
 
+    public override bool Sign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
+    {
+        if (!_canSign || _key.PrivateKey == null)
+        {
+            throw new NotSupportedException("This instance is not configured for signing, or private key is missing!");
+        }
+
+        var signature = _key.Backend.Sign(Algorithm, data.ToArray(), _key.PrivateKey);
+        
+        if (signature.Length > destination.Length)
+        {
+            throw new ArgumentException($"UH OH! The destination buffer is too small to hold the signature. Required size: {signature.Length} bytes. Available size: {destination.Length} bytes.", nameof(destination));
+        }
+
+        signature.CopyTo(destination);
+        bytesWritten = signature.Length;
+        return true;
+    }
+
     public override bool Verify(byte[] input, byte[] signature)
     {
         return _key.Backend.Verify(Algorithm, input, signature, _key.PublicKey);

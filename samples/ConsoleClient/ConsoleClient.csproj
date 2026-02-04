@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="identitymodel" Version="7.0.0" />
+      <PackageReference Include="identitymodel" />
     </ItemGroup>
 
 </Project>

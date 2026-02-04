@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/ConsoleClient/ConsoleClient.csproj" />
+    <Project Path="samples/IdentityServer/IdentityServer.csproj" />
+    <Project Path="samples/SampleApi/SampleApi.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Strathweb.Dilithium.AspNetCore/Strathweb.Dilithium.AspNetCore.csproj" />
+    <Project Path="src/Strathweb.Dilithium.AspNetCore.Tests/Strathweb.Dilithium.AspNetCore.Tests.csproj" />
+    <Project Path="src/Strathweb.Dilithium.DuendeIdentityServer/Strathweb.Dilithium.DuendeIdentityServer.csproj" />
+    <Project Path="src/Strathweb.Dilithium.IdentityModel/Strathweb.Dilithium.IdentityModel.csproj" />
+    <Project Path="src/Strathweb.Dilithium.Tests/Strathweb.Dilithium.Tests.csproj" />
+  </Folder>
+</Solution>

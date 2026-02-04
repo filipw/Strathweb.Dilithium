@@ -2,6 +2,7 @@
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.ResponseHandling;
+using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Services.KeyManagement;
 using Duende.IdentityServer.Stores;
 using Microsoft.Extensions.DependencyInjection;
@@ -71,6 +72,8 @@ public static class MlDsaIdentityServerExtensions
             builder.AddMlDsaSigningCredential(fixedKey);
         }
 
+        builder.Services.AddTransient<ITokenCreationService, MlDsaTokenCreationService>();
+
         return builder;
     }
     
@@ -86,6 +89,9 @@ public static class MlDsaIdentityServerExtensions
         };
 
         builder.Services.AddSingleton<IValidationKeysStore>(new InMemoryValidationKeysStore(new[] { keyInfo }));
+        builder.Services.AddTransient<ITokenCreationService, MlDsaTokenCreationService>();
+
+        //todo disable automatic key management?
         return builder;
     }
     
@@ -110,6 +116,7 @@ public static class MlDsaIdentityServerExtensions
             throw new Exception($"Could not deserialize JWK from '{jwkPath}'");
         }
 
+        builder.Services.AddTransient<ITokenCreationService, MlDsaTokenCreationService>();
         return builder.AddMlDsaSigningCredential(new MlDsaSecurityKey(jwk, backend));
     }
 }
